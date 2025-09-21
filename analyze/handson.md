@@ -35,3 +35,4 @@ yarn dev
 
 yarn dev
 选择 web
+PORT=8081 yarn affine dev -p @affine/web

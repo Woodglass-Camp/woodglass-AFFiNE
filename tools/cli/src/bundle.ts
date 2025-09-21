@@ -102,6 +102,8 @@ const httpProxyMiddlewareLogLevel = IN_CI ? 'silent' : 'error';
 
 const defaultDevServerConfig: DevServerConfiguration = {
   host: '0.0.0.0',
+  // Allow overriding dev server port by env; default 8080
+  port: process.env.PORT ? Number(process.env.PORT) : 8080,
   allowedHosts: 'all',
   hot: false,
   liveReload: true,
@@ -111,7 +113,10 @@ const defaultDevServerConfig: DevServerConfiguration = {
     overlay: process.env.DISABLE_DEV_OVERLAY === 'true' ? false : undefined,
     logging: process.env.CI ? 'none' : 'error',
     // see: https://webpack.js.org/configuration/dev-server/#websocketurl
-    webSocketURL: 'auto://0.0.0.0:8080/ws',
+    // Respect WDS_SOCKET_PORT/PORT for HMR client to avoid port mismatches
+    webSocketURL: `auto://0.0.0.0:${
+      process.env.WDS_SOCKET_PORT ?? process.env.PORT ?? '8080'
+    }/ws`,
   },
   historyApiFallback: {
     rewrites: [
@@ -129,17 +134,32 @@ const defaultDevServerConfig: DevServerConfiguration = {
     {
       context: '/api',
       target: 'http://localhost:3010',
+      changeOrigin: true,
+      onProxyReq: proxyReq => {
+        try {
+          proxyReq.setHeader('origin', 'http://localhost:3010');
+          proxyReq.setHeader('referer', 'http://localhost:3010/');
+        } catch {}
+      },
       logLevel: httpProxyMiddlewareLogLevel,
     },
     {
       context: '/socket.io',
       target: 'http://localhost:3010',
+      changeOrigin: true,
       ws: true,
       logLevel: httpProxyMiddlewareLogLevel,
     },
     {
       context: '/graphql',
       target: 'http://localhost:3010',
+      changeOrigin: true,
+      onProxyReq: proxyReq => {
+        try {
+          proxyReq.setHeader('origin', 'http://localhost:3010');
+          proxyReq.setHeader('referer', 'http://localhost:3010/');
+        } catch {}
+      },
       logLevel: httpProxyMiddlewareLogLevel,
     },
   ],
