@@ -58,6 +58,9 @@ export const GeneralEdgelessSetting = () => {
   const edgelessDefaultTheme = useLiveData(
     editorSetting.settings$
   ).edgelessDefaultTheme;
+  const panActivation = useLiveData(
+    editorSetting.settings$
+  ).edgelessPanActivation;
 
   const items = getThemeOptions(t);
   const currentTheme = useMemo(() => {
@@ -122,6 +125,53 @@ export const GeneralEdgelessSetting = () => {
           checked={editorSetting.edgelessScrollZoom.$.value}
           onChange={handleScrollZoomChange}
         ></Switch>
+      </SettingRow>
+      <SettingRow
+        name={'Canvas pan activation'}
+        desc={
+          'Choose which mouse button temporarily activates canvas panning in Edgeless'
+        }
+      >
+        <Menu
+          items={[
+            <MenuItem
+              key="middle"
+              selected={panActivation === 'middle'}
+              onSelect={() =>
+                editorSetting.set('edgelessPanActivation', 'middle')
+              }
+            >
+              Middle mouse button
+            </MenuItem>,
+            <MenuItem
+              key="right"
+              selected={panActivation === 'right'}
+              onSelect={() =>
+                editorSetting.set('edgelessPanActivation', 'right')
+              }
+            >
+              Right mouse button
+            </MenuItem>,
+          ]}
+          contentOptions={{
+            align: 'end',
+            sideOffset: 16,
+            style: { width: '280px' },
+          }}
+        >
+          <MenuTrigger
+            className={menuTrigger}
+            tooltip={
+              panActivation === 'right'
+                ? 'Right mouse button'
+                : 'Middle mouse button'
+            }
+          >
+            {panActivation === 'right'
+              ? 'Right mouse button'
+              : 'Middle mouse button'}
+          </MenuTrigger>
+        </Menu>
       </SettingRow>
     </>
   );

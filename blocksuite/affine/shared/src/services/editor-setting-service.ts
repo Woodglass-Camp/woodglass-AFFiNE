@@ -10,6 +10,10 @@ export const GeneralSettingSchema = z
   .object({
     edgelessScrollZoom: z.boolean().default(false),
     edgelessDisableScheduleUpdate: z.boolean().default(false),
+    // Which mouse button activates temporary canvas pan in edgeless
+    edgelessPanActivation: z
+      .enum(['middle', 'right'] as const)
+      .default('middle'),
     docCanvasPreferView: z
       .enum(['affine:embed-linked-doc', 'affine:embed-synced-doc'])
       .default('affine:embed-synced-doc'),
