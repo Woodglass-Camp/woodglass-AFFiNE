@@ -1,4 +1,4 @@
-import { rmSync } from 'node:fs';
+import { readFileSync,rmSync } from 'node:fs';
 import { cpus } from 'node:os';
 
 import { Logger } from '@affine-tools/utils/logger';
@@ -100,10 +100,27 @@ function getBundleConfigs(pkg: Package) {
 const IN_CI = !!process.env.CI;
 const httpProxyMiddlewareLogLevel = IN_CI ? 'silent' : 'error';
 
+const USE_HTTPS =
+  process.env.DEV_HTTPS === 'true' || process.env.HTTPS === 'true';
+const keyPath = process.env.SSL_KEY_FILE;
+const certPath = process.env.SSL_CRT_FILE;
+
 const defaultDevServerConfig: DevServerConfiguration = {
   host: '0.0.0.0',
   // Allow overriding dev server port by env; default 8080
   port: process.env.PORT ? Number(process.env.PORT) : 8080,
+  server: USE_HTTPS
+    ? {
+        type: 'https',
+        options:
+          keyPath && certPath
+            ? {
+                key: readFileSync(keyPath),
+                cert: readFileSync(certPath),
+              }
+            : undefined,
+      }
+    : 'http',
   allowedHosts: 'all',
   hot: false,
   liveReload: true,
