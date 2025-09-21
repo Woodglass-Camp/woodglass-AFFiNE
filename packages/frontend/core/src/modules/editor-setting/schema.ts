@@ -26,6 +26,7 @@ const AffineEditorSettingSchema = z.object({
   edgelessDefaultTheme: z
     .enum(['specified', 'dark', 'light', 'auto'])
     .default('specified'),
+  edgelessTabletPencilMode: z.boolean().default(false),
   openDocMode: z
     .enum([
       'open-in-active-view',

@@ -114,9 +114,9 @@ const defaultDevServerConfig: DevServerConfiguration = {
     logging: process.env.CI ? 'none' : 'error',
     // see: https://webpack.js.org/configuration/dev-server/#websocketurl
     // Respect WDS_SOCKET_PORT/PORT for HMR client to avoid port mismatches
-    webSocketURL: `auto://0.0.0.0:${
-      process.env.WDS_SOCKET_PORT ?? process.env.PORT ?? '8080'
-    }/ws`,
+    webSocketURL: `auto://${
+      process.env.WDS_SOCKET_HOST ?? '0.0.0.0'
+    }:${process.env.WDS_SOCKET_PORT ?? process.env.PORT ?? '8080'}/ws`,
   },
   historyApiFallback: {
     rewrites: [

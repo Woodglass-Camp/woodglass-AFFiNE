@@ -1,4 +1,4 @@
-import { Menu, MenuItem, MenuTrigger } from '@affine/component';
+import { Menu, MenuItem, MenuTrigger, Switch } from '@affine/component';
 import {
   SettingHeader,
   SettingRow,
@@ -13,6 +13,9 @@ export const WoodglassSettings = () => {
   const panActivation = useLiveData(
     editorSetting.settings$
   ).edgelessPanActivation;
+  const tabletPencilMode = useLiveData(
+    editorSetting.settings$
+  ).edgelessTabletPencilMode;
 
   return (
     <>
@@ -20,6 +23,18 @@ export const WoodglassSettings = () => {
         title={'Woodglass 功能'}
         subtitle={'自定义 AFFiNE 行为的实验性选项'}
       />
+
+      <SettingRow
+        name={'平板 Pencil 模式'}
+        desc={'开启后：手指仅用于平移、禁止选中；手写笔仅用于画笔绘制'}
+      >
+        <Switch
+          checked={tabletPencilMode}
+          onChange={(checked: boolean) =>
+            editorSetting.set('edgelessTabletPencilMode', checked)
+          }
+        ></Switch>
+      </SettingRow>
 
       <SettingRow name={'画布平移按键'} desc={'选择无界画布临时平移的按键'}>
         <Menu

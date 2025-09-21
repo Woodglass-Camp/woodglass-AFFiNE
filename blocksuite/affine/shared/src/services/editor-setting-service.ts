@@ -10,6 +10,8 @@ export const GeneralSettingSchema = z
   .object({
     edgelessScrollZoom: z.boolean().default(false),
     edgelessDisableScheduleUpdate: z.boolean().default(false),
+    // Tablet Pencil mode: enable palm rejection and mode-specific interactions
+    edgelessTabletPencilMode: z.boolean().default(false),
     // Which mouse button activates temporary canvas pan in edgeless
     edgelessPanActivation: z
       .enum(['middle', 'right'] as const)
