@@ -29,6 +29,7 @@ import { MeetingsSettings } from './meetings';
 import { NotificationSettings } from './notifications';
 import { AFFiNEPricingPlans } from './plans';
 import { Shortcuts } from './shortcuts';
+import { WoodglassSettings } from './woodglass';
 
 export type GeneralSettingList = SettingSidebarItem[];
 
@@ -136,6 +137,12 @@ export const useGeneralSettingList = (): GeneralSettingList => {
 
     settings.push(
       {
+        key: 'woodglass',
+        title: 'Woodglass 功能',
+        icon: <ExperimentIcon />,
+        testId: 'woodglass-panel-trigger',
+      },
+      {
         key: 'experimental-features',
         title: t['com.affine.settings.workspace.experimental-features'](),
         icon: <ExperimentIcon />,
@@ -186,6 +193,8 @@ export const GeneralSetting = ({
       return <BillingSettings onChangeSettingState={onChangeSettingState} />;
     case 'experimental-features':
       return <ExperimentalFeatures />;
+    case 'woodglass':
+      return <WoodglassSettings />;
     case 'backup':
       return <BackupSettingPanel />;
     default:
