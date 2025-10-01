@@ -54,6 +54,7 @@ import { PageDraggingAreaViewExtension } from '@blocksuite/affine-widget-page-dr
 import { RemoteSelectionViewExtension } from '@blocksuite/affine-widget-remote-selection/view';
 import { ScrollAnchoringViewExtension } from '@blocksuite/affine-widget-scroll-anchoring/view';
 import { SlashMenuViewExtension } from '@blocksuite/affine-widget-slash-menu/view';
+import { TabletPencilModeViewExtension } from '@blocksuite/affine-widget-tablet-pencil-mode/view';
 import { ToolbarViewExtension } from '@blocksuite/affine-widget-toolbar/view';
 import { ViewportOverlayViewExtension } from '@blocksuite/affine-widget-viewport-overlay/view';
 
@@ -116,6 +117,7 @@ export function getInternalViewExtensions() {
     SlashMenuViewExtension,
     ToolbarViewExtension,
     ViewportOverlayViewExtension,
+    TabletPencilModeViewExtension,
     EdgelessZoomToolbarViewExtension,
     PageDraggingAreaViewExtension,
     EdgelessSelectedRectViewExtension,

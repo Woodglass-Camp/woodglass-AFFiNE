@@ -123,6 +123,7 @@ export const GeneralEdgelessSetting = () => {
           onChange={handleScrollZoomChange}
         ></Switch>
       </SettingRow>
+      {/** woodglass 功能已移动至独立面板 */}
     </>
   );
 };
