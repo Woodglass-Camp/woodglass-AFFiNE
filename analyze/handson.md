@@ -2,7 +2,7 @@ nvm use
 
 bash scripts/cn-env.sh
 
-HTTPS_PROXY=http://<server>:port ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ YARN_ENABLE_INLINE_BUILDS=1 DEBUG=@electron/get\* yarn install
+ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ YARN_ENABLE_INLINE_BUILDS=1 DEBUG=@electron/get\* yarn install
 
 yarn affine @affine/native build
 yarn affine @affine/server-native build
@@ -11,6 +11,7 @@ yarn affine @affine/server-native build
 
 cp ./.docker/dev/compose.yml.example ./.docker/dev/compose.yml
 cp ./.docker/dev/.env.example ./.docker/dev/.env
+
 yarn affine @affine/server-native build
 yarn affine @affine/reader build
 
@@ -30,8 +31,11 @@ REDIS_SERVER_HOST=localhost
 # COPILOT_PERPLEXITY_API_KEY=YOUR_KEY
 ```
 
-yarn dev
-选择 server
+docker compose -f ./.docker/dev/compose.yml up
 
 yarn dev
+选择 server
+yarn affine dev -p @affine/server
+yarn dev
 选择 web
+yarn affine dev -p @affine/web
