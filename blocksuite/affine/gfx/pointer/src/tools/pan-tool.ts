@@ -2,6 +2,7 @@ import {
   DefaultTool,
   EdgelessLegacySlotIdentifier,
 } from '@blocksuite/affine-block-surface';
+import { EditorSettingProvider } from '@blocksuite/affine-shared/services';
 import { on } from '@blocksuite/affine-shared/utils';
 import type { PointerEventState } from '@blocksuite/std';
 import { BaseTool, MouseButton, type ToolOptions } from '@blocksuite/std/gfx';
@@ -54,12 +55,24 @@ export class PanTool extends BaseTool<PanToolOption> {
 
   override mounted(): void {
     this.addHook('pointerDown', evt => {
-      const shouldPanWithMiddle = evt.raw.button === MouseButton.MIDDLE;
+      const editorSetting = this.std.getOptional(
+        EditorSettingProvider
+      )?.setting$;
+      const activation =
+        (editorSetting?.peek().edgelessPanActivation as
+          | 'middle'
+          | 'right'
+          | undefined) ?? 'middle';
 
-      if (!shouldPanWithMiddle) {
-        return;
-      }
+      const isMiddle = evt.raw.button === MouseButton.MIDDLE;
+      const isRight = evt.raw.button === MouseButton.SECONDARY;
+      const shouldPan =
+        (activation === 'middle' && isMiddle) ||
+        (activation === 'right' && isRight);
 
+      if (!shouldPan) return;
+
+      // prevent default to avoid native behaviors (e.g., context menu)
       evt.raw.preventDefault();
 
       const currentTool = this.controller.currentToolOption$.peek();
@@ -91,7 +104,7 @@ export class PanTool extends BaseTool<PanToolOption> {
         this.gfx.selection.set(selectionToRestore);
       };
 
-      // If in presentation mode, disable black background after middle mouse drag
+      // If in presentation mode, disable black background after middle/right mouse drag
       if (currentTool.toolType?.toolName === 'frameNavigator') {
         const slots = this.std.get(EdgelessLegacySlotIdentifier);
         slots.navigatorSettingUpdated.next({
@@ -99,17 +112,32 @@ export class PanTool extends BaseTool<PanToolOption> {
         });
       }
 
-      requestAnimationFrame(() => {
+      const activatePan = () =>
         this.controller.setTool(PanTool, {
           panning: true,
         });
+
+      // For right-button activation, we must switch tool synchronously
+      // to ensure ToolController sees allowDragWithRightButton at dragStart time.
+      if (activation === 'right') {
+        activatePan();
+      } else {
+        requestAnimationFrame(activatePan);
+      }
+
+      // Prevent native context menu while panning with right button
+      const disposeContextMenu = on(document, 'contextmenu', e => {
+        e.preventDefault();
       });
 
       const dispose = on(document, 'pointerup', evt => {
-        if (evt.button === MouseButton.MIDDLE) {
+        const expectedButton =
+          activation === 'right' ? MouseButton.SECONDARY : MouseButton.MIDDLE;
+        if (evt.button === expectedButton) {
           restoreToPrevious();
         }
         dispose();
+        disposeContextMenu();
       });
 
       return false;
