@@ -1,4 +1,4 @@
-import { Menu, MenuItem, MenuTrigger, Slider, Switch } from '@affine/component';
+import { Button, Menu, MenuItem, MenuTrigger, Slider, Switch } from '@affine/component';
 import {
   SettingHeader,
   SettingRow,
@@ -7,6 +7,7 @@ import { EditorSettingService } from '@affine/core/modules/editor-setting';
 import { useLiveData, useService } from '@toeverything/infra';
 
 import { menuTrigger } from '../editor/style.css';
+import { useEffect, useMemo, useState } from 'react';
 
 export const WoodglassSettings = () => {
   const editorSetting = useService(EditorSettingService).editorSetting;
@@ -18,6 +19,34 @@ export const WoodglassSettings = () => {
   ).edgelessTabletPencilMode;
   const pinchSmoothAlpha =
     useLiveData(editorSetting.settings$).edgelessPinchSmoothAlpha ?? 0.25;
+
+  // Web Fullscreen state + handlers
+  const initialFullscreen = useMemo(
+    () => typeof document !== 'undefined' && !!document.fullscreenElement,
+    []
+  );
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(initialFullscreen);
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  const enterFullscreen = async () => {
+    try {
+      await document.documentElement.requestFullscreen?.({ navigationUI: 'hide' } as any);
+    } catch {
+      // ignore
+    }
+  };
+  const exitFullscreen = async () => {
+    try {
+      await document.exitFullscreen?.();
+    } catch {
+      // ignore
+    }
+  };
 
   return (
     <>
@@ -93,6 +122,19 @@ export const WoodglassSettings = () => {
           width={280}
           nodes={[0, 0.25, 0.5, 0.75, 1]}
         />
+      </SettingRow>
+
+      <SettingRow
+        name={'网页全屏'}
+        desc={'使用浏览器全屏显示 AFFiNE（需要用户点击触发）'}
+      >
+        {isFullscreen ? (
+          <Button onClick={exitFullscreen}>退出全屏</Button>
+        ) : (
+          <Button variant="primary" onClick={enterFullscreen}>
+            进入全屏
+          </Button>
+        )}
       </SettingRow>
     </>
   );
