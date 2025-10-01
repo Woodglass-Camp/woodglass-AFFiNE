@@ -102,6 +102,8 @@ const httpProxyMiddlewareLogLevel = IN_CI ? 'silent' : 'error';
 
 const defaultDevServerConfig: DevServerConfiguration = {
   host: '0.0.0.0',
+  // allow override dev port by env; default 8080
+  port: process.env.PORT ? Number(process.env.PORT) : 8080,
   allowedHosts: 'all',
   hot: false,
   liveReload: true,
@@ -111,7 +113,7 @@ const defaultDevServerConfig: DevServerConfiguration = {
     overlay: process.env.DISABLE_DEV_OVERLAY === 'true' ? false : undefined,
     logging: process.env.CI ? 'none' : 'error',
     // see: https://webpack.js.org/configuration/dev-server/#websocketurl
-    webSocketURL: 'auto://0.0.0.0:8080/ws',
+    webSocketURL: `auto://0.0.0.0:${process.env.PORT ?? '8080'}/ws`,
   },
   historyApiFallback: {
     rewrites: [
