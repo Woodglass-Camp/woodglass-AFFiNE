@@ -1,13 +1,20 @@
-import { Button, Menu, MenuItem, MenuTrigger, Slider, Switch } from '@affine/component';
+import {
+  Button,
+  Menu,
+  MenuItem,
+  MenuTrigger,
+  Slider,
+  Switch,
+} from '@affine/component';
 import {
   SettingHeader,
   SettingRow,
 } from '@affine/component/setting-components';
 import { EditorSettingService } from '@affine/core/modules/editor-setting';
 import { useLiveData, useService } from '@toeverything/infra';
+import { useEffect, useMemo, useState } from 'react';
 
 import { menuTrigger } from '../editor/style.css';
-import { useEffect, useMemo, useState } from 'react';
 
 export const WoodglassSettings = () => {
   const editorSetting = useService(EditorSettingService).editorSetting;
@@ -35,7 +42,9 @@ export const WoodglassSettings = () => {
 
   const enterFullscreen = async () => {
     try {
-      await document.documentElement.requestFullscreen?.({ navigationUI: 'hide' } as any);
+      await document.documentElement.requestFullscreen?.({
+        navigationUI: 'hide',
+      } as any);
     } catch {
       // ignore
     }
@@ -46,6 +55,14 @@ export const WoodglassSettings = () => {
     } catch {
       // ignore
     }
+  };
+
+  const handleEnterFullscreen = () => {
+    enterFullscreen().catch(() => {});
+  };
+
+  const handleExitFullscreen = () => {
+    exitFullscreen().catch(() => {});
   };
 
   return (
@@ -129,9 +146,9 @@ export const WoodglassSettings = () => {
         desc={'使用浏览器全屏显示 AFFiNE（需要用户点击触发）'}
       >
         {isFullscreen ? (
-          <Button onClick={exitFullscreen}>退出全屏</Button>
+          <Button onClick={handleExitFullscreen}>退出全屏</Button>
         ) : (
-          <Button variant="primary" onClick={enterFullscreen}>
+          <Button variant="primary" onClick={handleEnterFullscreen}>
             进入全屏
           </Button>
         )}

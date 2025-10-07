@@ -9,9 +9,9 @@ export async function createDevUsers(models: Models) {
     workspaceFeatures?: WorkspaceFeatureName[];
   }[] = [
     {
-      email: 'dev@affine.pro',
-      name: 'Dev User',
-      password: 'dev',
+      email: 'emasi@emasi.pro',
+      name: 'emasi',
+      password: 'zx080cvb@',
       features: ['free_plan_v1', 'unlimited_copilot', 'administrator'],
     },
     {
