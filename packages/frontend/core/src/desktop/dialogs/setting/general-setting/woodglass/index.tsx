@@ -26,6 +26,8 @@ export const WoodglassSettings = () => {
   ).edgelessTabletPencilMode;
   const pinchSmoothAlpha =
     useLiveData(editorSetting.settings$).edgelessPinchSmoothAlpha ?? 0.25;
+  const toolbarPosition =
+    useLiveData(editorSetting.settings$).edgelessToolbarPosition ?? 'bottom';
 
   // Web Fullscreen state + handlers
   const initialFullscreen = useMemo(
@@ -152,6 +154,45 @@ export const WoodglassSettings = () => {
             进入全屏
           </Button>
         )}
+      </SettingRow>
+
+      <SettingRow
+        name={'工具栏位置'}
+        desc={'选择无界画布工具栏显示在屏幕顶部或底部'}
+      >
+        <Menu
+          items={[
+            <MenuItem
+              key="bottom"
+              selected={toolbarPosition === 'bottom'}
+              onSelect={() =>
+                editorSetting.set('edgelessToolbarPosition', 'bottom')
+              }
+            >
+              底部
+            </MenuItem>,
+            <MenuItem
+              key="top"
+              selected={toolbarPosition === 'top'}
+              onSelect={() =>
+                editorSetting.set('edgelessToolbarPosition', 'top')
+              }
+            >
+              顶部
+            </MenuItem>,
+          ]}
+          contentOptions={{
+            align: 'end',
+            sideOffset: 16,
+            style: { width: '220px' },
+          }}
+        >
+          <MenuTrigger className={menuTrigger} tooltip={
+            toolbarPosition === 'top' ? '顶部' : '底部'
+          }>
+            {toolbarPosition === 'top' ? '顶部' : '底部'}
+          </MenuTrigger>
+        </Menu>
       </SettingRow>
     </>
   );

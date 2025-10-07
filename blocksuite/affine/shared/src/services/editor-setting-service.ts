@@ -16,6 +16,10 @@ export const GeneralSettingSchema = z
     edgelessPanActivation: z
       .enum(['middle', 'right'] as const)
       .default('middle'),
+    // Placement of the edgeless toolbar
+    edgelessToolbarPosition: z
+      .enum(['bottom', 'top'] as const)
+      .default('bottom'),
     // Smoothing coefficient for two-finger pinch zoom in Tablet Pencil mode
     // 0 = no smoothing, 1 = fully sticky (not recommended). Typical: 0.15~0.35
     edgelessPinchSmoothAlpha: z.number().min(0).max(1).default(0.25),
