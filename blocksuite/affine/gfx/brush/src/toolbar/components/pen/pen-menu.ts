@@ -67,6 +67,29 @@ export class EdgelessPenMenu extends EdgelessToolbarToolMixin(
       }
     }
 
+    :host-context([data-position='top']) .pens {
+      align-items: flex-start;
+
+      edgeless-tool-icon-button {
+        align-self: flex-end;
+      }
+
+      .pen-wrapper {
+        align-items: flex-start;
+        transform: translateY(2px);
+      }
+
+      .pen-wrapper:hover,
+      .pen-wrapper:active,
+      .pen-wrapper[data-active] {
+        transform: translateY(22px);
+      }
+
+      .pen-wrapper svg {
+        transform: rotate(180deg);
+      }
+    }
+
     .menu-content {
       display: flex;
       align-items: center;

@@ -1,4 +1,5 @@
 import { BlockSuiteError } from '@blocksuite/global/exceptions';
+import { autoPlacement, offset } from '@floating-ui/dom';
 
 // more than 100% due to the shadow
 const leaveTranslateDown = `translateY(calc(100% + 10px))`;
@@ -29,6 +30,7 @@ export function createPopper<T extends keyof HTMLElementTagNameMap>(
     onDispose?: () => void;
     setProps?: (ele: HTMLElementTagNameMap[T]) => void;
     placement?: 'top' | 'bottom';
+    middleware?: Parameters<typeof autoPlacement>[0]['middleware'];
   }
 ): MenuPopper<HTMLElementTagNameMap[T]> {
   const duration = options?.duration ?? 230;
