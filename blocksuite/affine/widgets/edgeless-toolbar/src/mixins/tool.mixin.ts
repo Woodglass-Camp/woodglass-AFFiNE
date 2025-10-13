@@ -119,12 +119,19 @@ export const EdgelessToolbarToolMixin = <T extends Constructor<LitElement>>(
         this.toolbar.activePopper.dispose();
         this.toolbar.activePopper = null;
       }
-      this.popper = createPopper(args[0], args[1], {
-        ...args[2],
+      const placementForToolbar =
+        this.toolbar?.toolbarPosition === 'top' ? 'bottom' : 'top';
+      const incomingOptions = args[2] ?? {};
+      const nextOptions = {
+        ...incomingOptions,
+        placement: incomingOptions.placement ?? placementForToolbar,
         onDispose: () => {
-          args[2]?.onDispose?.();
+          incomingOptions.onDispose?.();
           this.popper = null;
         },
+      } as Parameters<typeof createPopper>[2];
+      this.popper = createPopper(args[0], args[1], {
+        ...nextOptions,
       }) as MenuPopper<HTMLElement>;
       this.toolbar.activePopper = this.popper;
       return this.popper;
