@@ -512,15 +512,20 @@ export class EdgelessToolbarWidget extends WidgetComponent<RootBlockModel> {
     if (!this._hiddenQuickTools.length) return;
 
     this._moreQuickToolsMenuRef = e.currentTarget;
+    const allowedPlacements =
+      this.toolbarPosition === 'top' ? ['bottom'] : ['top'];
+    const mainAxisOffset =
+      ((TOOLBAR_HEIGHT - QUICK_TOOL_MORE_SIZE) / 2 + 8) *
+      (this.toolbarPosition === 'top' ? -1 : 1);
     this._moreQuickToolsMenu = popMenu(
       popupTargetFromElement(e.currentTarget as HTMLElement),
       {
         middleware: [
           autoPlacement({
-            allowedPlacements: ['top'],
+            allowedPlacements,
           }),
           offset({
-            mainAxis: (TOOLBAR_HEIGHT - QUICK_TOOL_MORE_SIZE) / 2 + 8,
+            mainAxis: mainAxisOffset,
           }),
         ],
         options: {
