@@ -51,9 +51,6 @@ export const brushToolbarConfig = {
               max: BRUSH_LINE_WIDTHS[BRUSH_LINE_WIDTHS.length - 1] ?? lineWidth,
               step: 0.1,
             }}
-            .sliderStyle=${{
-              width: '80px',
-            }}
             @select=${onPick}
           >
           </edgeless-line-width-panel>

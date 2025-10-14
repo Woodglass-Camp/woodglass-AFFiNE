@@ -7,7 +7,7 @@ import type { SliderSelectEvent } from '../slider';
 import type { SliderContinuousRange, SliderStyle } from '../slider/types';
 
 const defaultSliderStyle: Partial<SliderStyle> = {
-  width: '120px',
+  width: '140px',
   itemSize: 16,
   itemIconSize: 8,
   dragHandleSize: 14,
@@ -18,11 +18,17 @@ export class EdgelessLineWidthPanel extends WithDisposable(LitElement) {
     :host {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+    }
+
+    affine-slider {
+      flex: 0 0 auto;
+      width: var(--width, 140px);
+      max-width: 100%;
     }
 
     .value {
-      min-width: 56px;
+      min-width: 48px;
       text-align: right;
       font-size: 12px;
       color: var(--affine-text-secondary-color, #6c6f73);
@@ -50,10 +56,15 @@ export class EdgelessLineWidthPanel extends WithDisposable(LitElement) {
         }
       : { points: this.lineWidths };
 
+    const sliderStyle: SliderStyle = {
+      ...defaultSliderStyle,
+      ...(this.sliderStyle ?? {}),
+    };
+
     return html`<affine-slider
         ?disabled=${this.disabled}
         .range=${range}
-        .sliderStyle=${this.sliderStyle ?? defaultSliderStyle}
+        .sliderStyle=${sliderStyle}
         .value=${this.selectedSize}
         .tooltip=${this.hasTooltip ? 'Thickness' : undefined}
         @select=${(e: SliderSelectEvent) => {

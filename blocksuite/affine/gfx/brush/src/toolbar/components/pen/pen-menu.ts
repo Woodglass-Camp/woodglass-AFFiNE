@@ -207,7 +207,6 @@ export class EdgelessPenMenu extends EdgelessToolbarToolMixin(
             .selectedSize=${Number(lineWidth.toFixed(2))}
             .continuousRange=${lineWidthRange}
             .sliderStyle=${{
-              width: '80px',
               itemSize: 12,
               itemIconSize: 6,
               dragHandleSize: 14,

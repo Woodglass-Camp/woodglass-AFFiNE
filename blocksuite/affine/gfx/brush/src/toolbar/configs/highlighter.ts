@@ -66,9 +66,6 @@ export const highlighterToolbarConfig = {
               step: 0.1,
             }}
             .selectedSize=${Number(lineWidth.toFixed(2))}
-            .sliderStyle=${{
-              width: '80px',
-            }}
             @select=${onPick}
           >
           </edgeless-line-width-panel>
