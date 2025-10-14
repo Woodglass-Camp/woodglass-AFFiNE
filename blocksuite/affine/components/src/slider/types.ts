@@ -1,4 +1,4 @@
-export type SliderRange = {
+export type SliderDiscreteRange = {
   /**
    * a series of points in slider
    */
@@ -9,6 +9,17 @@ export type SliderRange = {
    */
   uniform?: boolean;
 };
+
+export type SliderContinuousRange = {
+  /** minimum value */
+  min: number;
+  /** maximum value */
+  max: number;
+  /** step between values */
+  step: number;
+};
+
+export type SliderRange = SliderDiscreteRange | SliderContinuousRange;
 
 export type SliderStyle = {
   width: string;

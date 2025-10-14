@@ -38,7 +38,7 @@ import {
 } from 'zod';
 
 const ConnectorEndpointSchema = z.nativeEnum(PointStyle);
-const LineWidthSchema = z.nativeEnum(LineWidth);
+const LineWidthSchema = z.number().min(1);
 const ShapeStyleSchema = z.nativeEnum(ShapeStyle);
 const TextVerticalAlignSchema = z.nativeEnum(TextVerticalAlign);
 const ConnectorModeSchema = z.nativeEnum(ConnectorMode);
@@ -96,8 +96,8 @@ export const HighlighterSchema = z
     color: ColorSchema,
     lineWidth: z
       .number()
-      .int()
-      .refine(value => HIGHLIGHTER_LINE_WIDTHS.includes(value)),
+      .min(HIGHLIGHTER_LINE_WIDTHS[0])
+      .max(HIGHLIGHTER_LINE_WIDTHS[HIGHLIGHTER_LINE_WIDTHS.length - 1] ?? 30),
   })
   .default({
     color: DefaultTheme.hightlighterColor,

@@ -145,8 +145,20 @@ export class EdgelessPenMenu extends EdgelessToolbarToolMixin(
       },
     } = this;
 
-    const lineWidths =
-      type === 'brush' ? BRUSH_LINE_WIDTHS : HIGHLIGHTER_LINE_WIDTHS;
+    const lineWidthRange =
+      type === 'brush'
+        ? {
+            min: 1,
+            max: BRUSH_LINE_WIDTHS[BRUSH_LINE_WIDTHS.length - 1] ?? 12,
+            step: 0.1,
+          }
+        : {
+            min: HIGHLIGHTER_LINE_WIDTHS[0],
+            max: HIGHLIGHTER_LINE_WIDTHS[
+              HIGHLIGHTER_LINE_WIDTHS.length - 1
+            ] ?? 30,
+            step: 0.1,
+          };
 
     return html`
       <edgeless-slide-menu>
@@ -192,8 +204,14 @@ export class EdgelessPenMenu extends EdgelessToolbarToolMixin(
         </div>
         <div class="menu-content">
           <edgeless-line-width-panel
-            .selectedSize=${lineWidth}
-            .lineWidths=${lineWidths}
+            .selectedSize=${Number(lineWidth.toFixed(2))}
+            .continuousRange=${lineWidthRange}
+            .sliderStyle=${{
+              width: '80px',
+              itemSize: 12,
+              itemIconSize: 6,
+              dragHandleSize: 14,
+            }}
             @select=${this._onPickLineWidth}
           >
           </edgeless-line-width-panel>
