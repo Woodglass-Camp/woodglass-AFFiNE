@@ -4,9 +4,11 @@ import 'katex/dist/katex.min.css';
 import { useConfirmModal, useLitPortalFactory } from '@affine/component';
 import {
   type EdgelessEditor,
+  type GridmapEditor,
   LitDocEditor,
   LitDocTitle,
   LitEdgelessEditor,
+  LitGridmapEditor,
   type PageEditor,
 } from '@affine/core/blocksuite/editors';
 import { getViewManager } from '@affine/core/blocksuite/manager/view';
@@ -330,6 +332,47 @@ export const BlocksuiteEdgelessEditor = forwardRef<
   return (
     <div className={styles.affineEdgelessDocViewport}>
       <LitEdgelessEditor ref={onDocRef} doc={page} specs={specs} />
+      {portals}
+    </div>
+  );
+});
+
+export const BlocksuiteGridmapEditor = forwardRef<
+  GridmapEditor,
+  BlocksuiteEditorProps
+>(function BlocksuiteGridmapEditor({ page }, ref) {
+  const [specs, portals] = usePatchSpecs('gridmap');
+  const editorRef = useRef<GridmapEditor | null>(null);
+
+  const onDocRef = useCallback(
+    (el: GridmapEditor) => {
+      editorRef.current = el;
+      if (ref) {
+        if (typeof ref === 'function') {
+          ref(el);
+        } else {
+          ref.current = el;
+        }
+      }
+    },
+    [ref]
+  );
+
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.updateComplete
+        .then(() => {
+          editorRef.current
+            ?.querySelector<HTMLElement>('affine-gridmap-root')
+            ?.click();
+        })
+        .catch(console.error);
+    }
+  }, []);
+
+  return (
+    <div className={styles.affineEdgelessDocViewport}>
+      <LitGridmapEditor ref={onDocRef} doc={page} specs={specs} />
       {portals}
     </div>
   );

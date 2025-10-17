@@ -72,7 +72,16 @@ export class DocRecord extends Entity<{ id: string }> {
   primaryMode$: LiveData<DocMode> = LiveData.from(
     this.docsStore.watchDocPrimaryModeSetting(this.id),
     'page' as DocMode
-  ).map(mode => (mode === 'edgeless' ? 'edgeless' : 'page') as DocMode);
+  ).map(mode => {
+    switch (mode) {
+      case 'edgeless':
+        return 'edgeless';
+      case 'gridmap':
+        return 'gridmap';
+      default:
+        return 'page';
+    }
+  });
 
   setPrimaryMode(mode: DocMode) {
     return this.docsStore.setDocPrimaryModeSetting(this.id, mode);

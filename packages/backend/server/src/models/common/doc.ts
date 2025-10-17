@@ -17,9 +17,11 @@ export type DocEditor = Pick<User, 'id' | 'name' | 'avatarUrl'>;
 export enum PublicDocMode {
   Page,
   Edgeless,
+  Gridmap,
 }
 
 export enum DocMode {
   page = 'page',
   edgeless = 'edgeless',
+  gridmap = 'gridmap',
 }

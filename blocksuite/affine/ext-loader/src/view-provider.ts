@@ -11,6 +11,7 @@ import {
 export type ViewScope =
   | 'page' // Standard page view
   | 'edgeless' // Edgeless (whiteboard) view
+  | 'gridmap' // Grid-aligned edgeless view
   | 'preview-page' // Page preview view
   | 'preview-edgeless' // Edgeless preview view
   | 'mobile-page' // Mobile page view
@@ -89,6 +90,7 @@ export class ViewExtensionProvider<
   isEdgeless = (scope: ViewScope) => {
     return (
       scope === 'edgeless' ||
+      scope === 'gridmap' ||
       scope === 'preview-edgeless' ||
       scope === 'mobile-edgeless'
     );

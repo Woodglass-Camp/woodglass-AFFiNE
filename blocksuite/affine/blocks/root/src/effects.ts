@@ -1,6 +1,7 @@
 import {
   EdgelessRootBlockComponent,
   EdgelessRootPreviewBlockComponent,
+  GridmapRootBlockComponent,
   PageRootBlockComponent,
   PreviewRootBlockComponent,
 } from './index.js';
@@ -18,11 +19,13 @@ function registerRootComponents() {
     'affine-edgeless-root-preview',
     EdgelessRootPreviewBlockComponent
   );
+  customElements.define('affine-gridmap-root', GridmapRootBlockComponent);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
     'affine-edgeless-root': EdgelessRootBlockComponent;
     'affine-page-root': PageRootBlockComponent;
+    'affine-gridmap-root': GridmapRootBlockComponent;
   }
 }

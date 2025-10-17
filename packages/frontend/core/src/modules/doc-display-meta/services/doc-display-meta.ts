@@ -1,5 +1,6 @@
 import { extractEmojiIcon } from '@affine/core/utils';
 import { i18nTime } from '@affine/i18n';
+import type { DocMode } from '@blocksuite/affine/model';
 import {
   AliasIcon as LitAliasIcon,
   BlockLinkIcon as LitBlockLinkIcon,
@@ -7,6 +8,7 @@ import {
   LinkedEdgelessIcon as LitLinkedEdgelessIcon,
   LinkedPageIcon as LitLinkedPageIcon,
   PageIcon as LitPageIcon,
+  TableIcon as LitTableIcon,
   TodayIcon as LitTodayIcon,
   TomorrowIcon as LitTomorrowIcon,
   YesterdayIcon as LitYesterdayIcon,
@@ -18,6 +20,7 @@ import {
   LinkedEdgelessIcon,
   LinkedPageIcon,
   PageIcon,
+  TableIcon,
   TodayIcon,
   TomorrowIcon,
   YesterdayIcon,
@@ -38,7 +41,7 @@ interface DocDisplayIconOptions<T extends IconType> {
    * Override the mode detected inside the hook:
    * by default, it will use the `primaryMode$` of the doc.
    */
-  mode?: 'edgeless' | 'page';
+  mode?: DocMode;
   title?: string; // title alias
   reference?: boolean;
   referenceToNode?: boolean;
@@ -63,6 +66,7 @@ const rcIcons = {
   LinkedEdgelessIcon,
   LinkedPageIcon,
   PageIcon,
+  GridmapIcon: TableIcon,
   TodayIcon,
   TomorrowIcon,
   YesterdayIcon,
@@ -74,6 +78,7 @@ const litIcons = {
   LinkedEdgelessIcon: LitLinkedEdgelessIcon,
   LinkedPageIcon: LitLinkedPageIcon,
   PageIcon: LitPageIcon,
+  GridmapIcon: LitTableIcon,
   TodayIcon: LitTodayIcon,
   TomorrowIcon: LitTomorrowIcon,
   YesterdayIcon: LitYesterdayIcon,
@@ -164,13 +169,24 @@ export class DocDisplayMetaService extends Service {
 
       // link to regular doc (reference)
       if (options?.reference) {
-        return finalMode === 'edgeless'
-          ? iconSet.LinkedEdgelessIcon
-          : iconSet.LinkedPageIcon;
+        if (finalMode === 'edgeless') {
+          return iconSet.LinkedEdgelessIcon;
+        }
+        if (finalMode === 'gridmap') {
+          return iconSet.GridmapIcon;
+        }
+        return iconSet.LinkedPageIcon;
       }
 
       // default icon
-      return finalMode === 'edgeless' ? iconSet.EdgelessIcon : iconSet.PageIcon;
+      switch (finalMode) {
+        case 'edgeless':
+          return iconSet.EdgelessIcon;
+        case 'gridmap':
+          return iconSet.GridmapIcon;
+        default:
+          return iconSet.PageIcon;
+      }
     });
   }
 

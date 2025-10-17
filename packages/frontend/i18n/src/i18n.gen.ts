@@ -346,6 +346,10 @@ export function useAFFiNEI18N(): {
       */
     ["New Page"](): string;
     /**
+      * `New gridmap`
+      */
+    ["New Gridmap"](): string;
+    /**
       * `Owner`
       */
     Owner(): string;

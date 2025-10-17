@@ -16,7 +16,7 @@ export class EdgelessDraggingAreaViewExtension extends ViewExtensionProvider {
 
   override setup(context: ViewExtensionContext) {
     super.setup(context);
-    if (this.isEdgeless(context.scope)) {
+    if (context.scope === 'edgeless') {
       context.register(edgelessDraggingAreaWidget);
     }
   }

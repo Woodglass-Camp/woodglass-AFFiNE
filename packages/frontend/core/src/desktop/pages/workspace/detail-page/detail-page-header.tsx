@@ -152,12 +152,13 @@ export function NormalPageHeader({ page, workspace }: PageHeaderProps) {
 
   const editor = useService(EditorService).editor;
   const currentMode = useLiveData(editor.mode$);
+  const showModeSwitch = currentMode !== 'gridmap';
 
   return (
     <Header className={styles.header} ref={containerRef}>
       <ViewTitle title={title} />
       <ViewIcon icon={currentMode ?? 'page'} />
-      <EditorModeSwitch />
+      {showModeSwitch ? <EditorModeSwitch /> : null}
       <BlocksuiteHeaderTitle inputHandleRef={titleInputHandleRef} />
       <TemplateMark />
       <div className={styles.iconButtonContainer}>

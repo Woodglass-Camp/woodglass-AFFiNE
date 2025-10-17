@@ -651,6 +651,7 @@ export interface DocHistoryType {
 /** Doc mode */
 export enum DocMode {
   edgeless = 'edgeless',
+  gridmap = 'gridmap',
   page = 'page',
 }
 
@@ -2064,6 +2065,7 @@ export enum Permission {
 /** The mode which the public doc default in */
 export enum PublicDocMode {
   Edgeless = 'Edgeless',
+  Gridmap = 'Gridmap',
   Page = 'Page',
 }
 

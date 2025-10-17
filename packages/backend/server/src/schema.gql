@@ -541,6 +541,7 @@ type DocHistoryType {
 """Doc mode"""
 enum DocMode {
   edgeless
+  gridmap
   page
 }
 
@@ -1513,6 +1514,7 @@ enum Permission {
 """The mode which the public doc default in"""
 enum PublicDocMode {
   Edgeless
+  Gridmap
   Page
 }
 

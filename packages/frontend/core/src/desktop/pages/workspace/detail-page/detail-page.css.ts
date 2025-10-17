@@ -1,6 +1,6 @@
 import { cssVar } from '@toeverything/theme';
 import { cssVarV2 } from '@toeverything/theme/v2';
-import { style } from '@vanilla-extract/css';
+import { globalStyle, style } from '@vanilla-extract/css';
 
 export const mainContainer = style({
   containerType: 'inline-size',
@@ -53,4 +53,33 @@ export const scrollbar = style({
 
 export const sidebarScrollArea = style({
   height: '100%',
+});
+
+export const gridmapCanvas = style({
+  flex: 1,
+  display: 'flex',
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'transparent',
+});
+
+globalStyle(`${gridmapCanvas} edgeless-editor`, {
+  backgroundColor: 'transparent',
+});
+
+globalStyle(`${gridmapCanvas} .affine-edgeless-viewport`, {
+  backgroundColor: 'transparent',
+});
+
+globalStyle(`${gridmapCanvas} .affine-edgeless-surface-block-container`, {
+  backgroundColor: 'transparent',
+});
+
+globalStyle(`${gridmapCanvas} .edgeless-background`, {
+  backgroundColor: 'transparent',
+  backgroundImage: 'none',
+});
+
+globalStyle(`${gridmapCanvas} .gridmap-background`, {
+  backgroundColor: 'transparent',
 });

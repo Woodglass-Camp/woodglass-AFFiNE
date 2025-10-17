@@ -47,8 +47,12 @@ export class RootViewExtension extends ViewExtensionProvider {
     ) {
       context.register(ReadOnlyClipboard);
     }
-    if (this.isEdgeless(context.scope)) {
+    if (context.scope === 'edgeless') {
       this._setupEdgeless(context);
+      return;
+    }
+    if (context.scope === 'gridmap') {
+      this._setupGridmap(context);
       return;
     }
     this._setupPage(context);
@@ -89,5 +93,15 @@ export class RootViewExtension extends ViewExtensionProvider {
       AltCloneExtension,
     ]);
     context.register(EdgelessElementToolbarExtension);
+  };
+
+  private readonly _setupGridmap = (context: ViewExtensionContext) => {
+    context.register([
+      EdgelessRootService,
+      ViewportElementExtension('.affine-gridmap-viewport'),
+      BlockViewExtension('affine:page', literal`affine-gridmap-root`),
+      EdgelessClipboardController,
+      AltCloneExtension,
+    ]);
   };
 }
