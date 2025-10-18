@@ -116,10 +116,15 @@ export const GridNoteBlockSchema = defineBlockSchema({
     return props;
   },
   metadata: {
-    version: NoteBlockSchema.metadata.version,
-    role: NoteBlockSchema.metadata.role,
-    parent: [...(NoteBlockSchema.metadata.parent ?? [])],
-    children: [...(NoteBlockSchema.metadata.children ?? [])],
+    version: 1,
+    role: 'hub',
+    parent: ['@root'],
+    children: [
+      '@content',
+      'affine:database',
+      'affine:data-view',
+      'affine:callout',
+    ],
   },
   toModel: () => new NoteBlockModel(),
 });
