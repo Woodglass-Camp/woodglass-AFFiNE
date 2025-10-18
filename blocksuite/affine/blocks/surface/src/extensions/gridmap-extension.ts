@@ -143,7 +143,11 @@ const snapElement = (surface: SurfaceBlockModel, id: string) => {
 
 const snapElements = (surface: SurfaceBlockModel) => {
   surface.elementModels.forEach(model => {
-    snapElement(surface, model.model.id);
+    const elementId = model?.model?.id;
+    if (!elementId) {
+      return;
+    }
+    snapElement(surface, elementId);
   });
 };
 
