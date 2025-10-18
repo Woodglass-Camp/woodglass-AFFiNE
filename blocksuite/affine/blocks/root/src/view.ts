@@ -104,6 +104,6 @@ export class RootViewExtension extends ViewExtensionProvider {
       EdgelessClipboardController,
       AltCloneExtension,
     ]);
-    context.register(GridmapToolbarViewExtension);
+    context.register(new GridmapToolbarViewExtension());
   };
 }
