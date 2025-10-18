@@ -14,7 +14,9 @@ export class GridmapToolbarViewExtension extends ViewExtensionProvider {
 
   override effect(): void {
     super.effect();
-    registerEdgelessToolbarElements();
+    if (!customElements.get('edgeless-toolbar-widget')) {
+      registerEdgelessToolbarElements();
+    }
   }
 
   override setup(context: ViewExtensionContext) {
