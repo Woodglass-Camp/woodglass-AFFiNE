@@ -2,7 +2,10 @@ import {
   type StoreExtensionContext,
   StoreExtensionProvider,
 } from '@blocksuite/affine-ext-loader';
-import { NoteBlockSchemaExtension } from '@blocksuite/affine-model';
+import {
+  GridNoteBlockSchemaExtension,
+  NoteBlockSchemaExtension,
+} from '@blocksuite/affine-model';
 import { z } from 'zod';
 
 import {
@@ -27,6 +30,7 @@ export class NoteStoreExtension extends StoreExtensionProvider<
   ) {
     super.setup(context);
     context.register(NoteBlockSchemaExtension);
+    context.register(GridNoteBlockSchemaExtension);
     if (options?.mode === 'edgeless') {
       context.register(EdgelessNoteBlockAdapterExtensions);
     } else {
