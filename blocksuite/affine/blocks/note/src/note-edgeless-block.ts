@@ -1,12 +1,13 @@
 import { EdgelessLegacySlotIdentifier } from '@blocksuite/affine-block-surface';
 import type { DocTitle } from '@blocksuite/affine-fragment-doc-title';
-import { NoteBlockSchema, NoteDisplayMode } from '@blocksuite/affine-model';
+import {
+  GridNoteBlockSchema,
+  NoteBlockSchema,
+  NoteDisplayMode,
+} from '@blocksuite/affine-model';
 import { focusTextModel } from '@blocksuite/affine-rich-text';
 import { EDGELESS_BLOCK_CHILD_PADDING } from '@blocksuite/affine-shared/consts';
-import {
-  DocModeProvider,
-  TelemetryProvider,
-} from '@blocksuite/affine-shared/services';
+import { TelemetryProvider } from '@blocksuite/affine-shared/services';
 import {
   handleNativeRangeAtPoint,
   stopPropagation,
@@ -274,9 +275,7 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
 
     const hasHeader = !!this.std.getOptional(NoteConfigExtension.identifier)
       ?.edgelessNoteHeader;
-    const docMode = this.std.getOptional(DocModeProvider)?.getEditorMode();
-    const gridSpan =
-      docMode === 'gridmap' ? this.model.props.grid ?? null : null;
+    const gridSpan = this.model.props.grid ?? null;
 
     if (gridSpan) {
       style['--affine-gridmap-cols'] = String(gridSpan.cols);
@@ -386,127 +385,132 @@ declare global {
   }
 }
 
-export const EdgelessNoteInteraction =
-  GfxViewInteractionExtension<EdgelessNoteBlockComponent>(
-    NoteBlockSchema.model.flavour,
-    {
-      resizeConstraint: {
-        minWidth: 170 + 24 * 2,
-        minHeight: 92,
-      },
-      handleRotate: () => {
-        return {
-          beforeRotate(context) {
-            context.set({
-              rotatable: false,
+const createEdgelessNoteInteraction = (flavour: string) =>
+  GfxViewInteractionExtension<EdgelessNoteBlockComponent>(flavour, {
+    resizeConstraint: {
+      minWidth: 170 + 24 * 2,
+      minHeight: 92,
+    },
+    handleRotate: () => {
+      return {
+        beforeRotate(context) {
+          context.set({
+            rotatable: false,
+          });
+        },
+      };
+    },
+    handleResize: ({ model }) => {
+      const initialScale: number = model.props.edgeless.scale ?? 1;
+      return {
+        onResizeStart(context): void {
+          context.default(context);
+          model.stash('edgeless');
+        },
+
+        onResizeMove(context): void {
+          const { originalBound, newBound, lockRatio, constraint } = context;
+          const { minWidth, minHeight, maxHeight, maxWidth } = constraint;
+
+          let scale = initialScale;
+          let edgelessProp = { ...model.props.edgeless };
+          const originalRealWidth = originalBound.w / scale;
+
+          if (lockRatio) {
+            scale = newBound.w / originalRealWidth;
+            edgelessProp.scale = scale;
+          }
+
+          newBound.w = clamp(newBound.w, minWidth * scale, maxWidth);
+          newBound.h = clamp(newBound.h, minHeight * scale, maxHeight);
+
+          if (newBound.h > minHeight * scale) {
+            edgelessProp.collapse = true;
+            edgelessProp.collapsedHeight = newBound.h / scale;
+          }
+
+          model.props.edgeless = edgelessProp;
+          model.props.xywh = newBound.serialize();
+        },
+
+        onResizeEnd(context): void {
+          context.default(context);
+          model.pop('edgeless');
+        },
+      };
+    },
+    handleSelection: ({ std, gfx, view, model }) => {
+      return {
+        onSelect(context) {
+          const { selected, multiSelect, event: e } = context;
+          const { editing } = gfx.selection;
+          const alreadySelected = gfx.selection.has(model.id);
+
+          if (!multiSelect && selected && (alreadySelected || editing)) {
+            if (model.isLocked()) return;
+
+            if (alreadySelected && editing) {
+              return;
+            }
+
+            gfx.selection.set({
+              elements: [model.id],
+              editing: true,
             });
-          },
-        };
-      },
-      handleResize: ({ model }) => {
-        const initialScale: number = model.props.edgeless.scale ?? 1;
-        return {
-          onResizeStart(context): void {
-            context.default(context);
-            model.stash('edgeless');
-          },
 
-          onResizeMove(context): void {
-            const { originalBound, newBound, lockRatio, constraint } = context;
-            const { minWidth, minHeight, maxHeight, maxWidth } = constraint;
+            view.updateComplete
+              .then(() => {
+                if (!view.isConnected) {
+                  return;
+                }
 
-            let scale = initialScale;
-            let edgelessProp = { ...model.props.edgeless };
-            const originalRealWidth = originalBound.w / scale;
+                if (model.children.length === 0) {
+                  const blockId = std.store.addBlock(
+                    'affine:paragraph',
+                    { type: 'text' },
+                    model.id
+                  );
 
-            if (lockRatio) {
-              scale = newBound.w / originalRealWidth;
-              edgelessProp.scale = scale;
-            }
-
-            newBound.w = clamp(newBound.w, minWidth * scale, maxWidth);
-            newBound.h = clamp(newBound.h, minHeight * scale, maxHeight);
-
-            if (newBound.h > minHeight * scale) {
-              edgelessProp.collapse = true;
-              edgelessProp.collapsedHeight = newBound.h / scale;
-            }
-
-            model.props.edgeless = edgelessProp;
-            model.props.xywh = newBound.serialize();
-          },
-
-          onResizeEnd(context): void {
-            context.default(context);
-            model.pop('edgeless');
-          },
-        };
-      },
-      handleSelection: ({ std, gfx, view, model }) => {
-        return {
-          onSelect(context) {
-            const { selected, multiSelect, event: e } = context;
-            const { editing } = gfx.selection;
-            const alreadySelected = gfx.selection.has(model.id);
-
-            if (!multiSelect && selected && (alreadySelected || editing)) {
-              if (model.isLocked()) return;
-
-              if (alreadySelected && editing) {
-                return;
-              }
-
-              gfx.selection.set({
-                elements: [model.id],
-                editing: true,
-              });
-
-              view.updateComplete
-                .then(() => {
-                  if (!view.isConnected) {
-                    return;
+                  if (blockId) {
+                    focusTextModel(std, blockId);
                   }
+                } else {
+                  const rect = view
+                    .querySelector('.affine-block-children-container')
+                    ?.getBoundingClientRect();
 
-                  if (model.children.length === 0) {
-                    const blockId = std.store.addBlock(
-                      'affine:paragraph',
-                      { type: 'text' },
-                      model.id
+                  if (rect) {
+                    const offsetY = 8 * gfx.viewport.zoom;
+                    const offsetX = 2 * gfx.viewport.zoom;
+                    const x = clamp(
+                      e.clientX,
+                      rect.left + offsetX,
+                      rect.right - offsetX
                     );
-
-                    if (blockId) {
-                      focusTextModel(std, blockId);
-                    }
+                    const y = clamp(
+                      e.clientY,
+                      rect.top + offsetY,
+                      rect.bottom - offsetY
+                    );
+                    handleNativeRangeAtPoint(x, y);
                   } else {
-                    const rect = view
-                      .querySelector('.affine-block-children-container')
-                      ?.getBoundingClientRect();
-
-                    if (rect) {
-                      const offsetY = 8 * gfx.viewport.zoom;
-                      const offsetX = 2 * gfx.viewport.zoom;
-                      const x = clamp(
-                        e.clientX,
-                        rect.left + offsetX,
-                        rect.right - offsetX
-                      );
-                      const y = clamp(
-                        e.clientY,
-                        rect.top + offsetY,
-                        rect.bottom - offsetY
-                      );
-                      handleNativeRangeAtPoint(x, y);
-                    } else {
-                      handleNativeRangeAtPoint(e.clientX, e.clientY);
-                    }
+                    handleNativeRangeAtPoint(e.clientX, e.clientY);
                   }
-                })
-                .catch(console.error);
-            } else {
-              context.default(context);
-            }
-          },
-        };
-      },
-    }
-  );
+                }
+              })
+              .catch(console.error);
+          } else {
+            context.default(context);
+          }
+        },
+      };
+    },
+  });
+
+export const EdgelessNoteInteraction = createEdgelessNoteInteraction(
+  NoteBlockSchema.model.flavour
+);
+
+export const GridEdgelessNoteInteraction = createEdgelessNoteInteraction(
+  GridNoteBlockSchema.model.flavour
+);

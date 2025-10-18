@@ -1,4 +1,7 @@
-import { FrameBlockModel } from '@blocksuite/affine-model';
+import {
+  FrameBlockModel,
+  NOTE_BLOCK_FLAVOURS,
+} from '@blocksuite/affine-model';
 import type { EditorHost } from '@blocksuite/std';
 import type { BlockModel } from '@blocksuite/store';
 
@@ -35,7 +38,12 @@ export function getPrevContentBlock(
       let prev = parent.children[tmpIndex];
 
       if (parent.role === 'root' && model.role === 'hub') {
-        while (prev && prev.flavour !== 'affine:note') {
+        while (
+          prev &&
+          !NOTE_BLOCK_FLAVOURS.includes(
+            prev.flavour as (typeof NOTE_BLOCK_FLAVOURS)[number]
+          )
+        ) {
           prev = parent.children[tmpIndex];
           tmpIndex--;
         }

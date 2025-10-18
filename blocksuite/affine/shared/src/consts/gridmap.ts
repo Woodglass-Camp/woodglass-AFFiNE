@@ -1,2 +1,1 @@
-export const GRIDMAP_GRID_SIZE = 64;
-
+export { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-model';

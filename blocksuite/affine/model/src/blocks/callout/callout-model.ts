@@ -27,6 +27,7 @@ export const CalloutBlockSchema = defineBlockSchema({
     role: 'hub',
     parent: [
       'affine:note',
+      'affine:grid-note',
       'affine:database',
       'affine:paragraph',
       'affine:list',

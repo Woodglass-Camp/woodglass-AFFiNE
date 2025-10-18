@@ -306,6 +306,7 @@ function addNoteAtPoint(
   } = options;
   const docMode = std.getOptional(DocModeProvider)?.getEditorMode();
   const isGridmap = docMode === 'gridmap';
+  const noteFlavour = isGridmap ? 'affine:grid-note' : 'affine:note';
   const snapSizeToGrid = (value: number) =>
     Math.max(
       GRIDMAP_GRID_SIZE,
@@ -321,7 +322,7 @@ function addNoteAtPoint(
     : undefined;
   const [x, y] = gfx.viewport.toModelCoord(point.x, point.y);
   const blockId = crud.addBlock(
-    'affine:note',
+    noteFlavour,
     {
       xywh: serializeXYWH(
         x - offsetX * scale,
@@ -330,7 +331,9 @@ function addNoteAtPoint(
         snappedHeight
       ),
       displayMode: NoteDisplayMode.EdgelessOnly,
-      ...(gridSpan ? { grid: gridSpan } : {}),
+      ...(gridSpan && noteFlavour === 'affine:grid-note'
+        ? { grid: gridSpan }
+        : {}),
     },
     parentId,
     noteIndex

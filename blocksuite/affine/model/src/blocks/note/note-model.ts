@@ -24,6 +24,7 @@ import {
   type StrokeStyle,
   StrokeStyleSchema,
 } from '../../consts/note';
+import { GRIDMAP_GRID_SIZE } from '../../consts/gridmap';
 import { type Color, ColorSchema, DefaultTheme } from '../../themes';
 
 export const NoteZodSchema = z
@@ -59,26 +60,28 @@ export const NoteZodSchema = z
     grid: undefined,
   });
 
+const createDefaultNoteProps = (): NoteProps => ({
+  xywh: `[0,0,${DEFAULT_NOTE_WIDTH},${DEFAULT_NOTE_HEIGHT}]`,
+  background: DefaultTheme.noteBackgrounColor,
+  index: 'a0',
+  lockedBySelf: false,
+  hidden: false,
+  displayMode: NoteDisplayMode.DocAndEdgeless,
+  edgeless: {
+    style: {
+      borderRadius: DEFAULT_NOTE_CORNER,
+      borderSize: DEFAULT_NOTE_BORDER_SIZE,
+      borderStyle: DEFAULT_NOTE_BORDER_STYLE,
+      shadowType: DEFAULT_NOTE_SHADOW,
+    },
+  },
+  comments: undefined,
+  grid: undefined,
+});
+
 export const NoteBlockSchema = defineBlockSchema({
   flavour: 'affine:note',
-  props: (): NoteProps => ({
-    xywh: `[0,0,${DEFAULT_NOTE_WIDTH},${DEFAULT_NOTE_HEIGHT}]`,
-    background: DefaultTheme.noteBackgrounColor,
-    index: 'a0',
-    lockedBySelf: false,
-    hidden: false,
-    displayMode: NoteDisplayMode.DocAndEdgeless,
-    edgeless: {
-      style: {
-        borderRadius: DEFAULT_NOTE_CORNER,
-        borderSize: DEFAULT_NOTE_BORDER_SIZE,
-        borderStyle: DEFAULT_NOTE_BORDER_STYLE,
-        shadowType: DEFAULT_NOTE_SHADOW,
-      },
-    },
-    comments: undefined,
-    grid: undefined,
-  }),
+  props: (): NoteProps => createDefaultNoteProps(),
   metadata: {
     version: 1,
     role: 'hub',
@@ -96,6 +99,29 @@ export const NoteBlockSchema = defineBlockSchema({
 });
 
 export const NoteBlockSchemaExtension = BlockSchemaExtension(NoteBlockSchema);
+
+const GRID_NOTE_DEFAULT_COLS = 4;
+const GRID_NOTE_DEFAULT_ROWS = 3;
+
+export const GridNoteBlockSchema = defineBlockSchema({
+  flavour: 'affine:grid-note',
+  props: (): NoteProps => {
+    const props = createDefaultNoteProps();
+    props.xywh = `[0,0,${GRIDMAP_GRID_SIZE * GRID_NOTE_DEFAULT_COLS},${GRIDMAP_GRID_SIZE * GRID_NOTE_DEFAULT_ROWS}]`;
+    props.displayMode = NoteDisplayMode.EdgelessOnly;
+    props.grid = {
+      cols: GRID_NOTE_DEFAULT_COLS,
+      rows: GRID_NOTE_DEFAULT_ROWS,
+    };
+    return props;
+  },
+  metadata: NoteBlockSchema.metadata,
+  toModel: () => new NoteBlockModel(),
+});
+
+export const GridNoteBlockSchemaExtension =
+  BlockSchemaExtension(GridNoteBlockSchema);
+
 export type NoteProps = {
   background: Color;
   displayMode: NoteDisplayMode;
@@ -115,6 +141,13 @@ export type NoteProps = {
    */
   hidden: boolean;
 } & GfxCompatibleProps;
+
+export const NOTE_BLOCK_FLAVOURS = [
+  NoteBlockSchema.model.flavour,
+  GridNoteBlockSchema.model.flavour,
+] as const;
+
+export type NoteBlockFlavour = (typeof NOTE_BLOCK_FLAVOURS)[number];
 
 export type NoteEdgelessProps = {
   style: {

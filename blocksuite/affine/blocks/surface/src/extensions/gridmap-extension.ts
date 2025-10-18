@@ -28,7 +28,7 @@ const GRIDMAP_EXCLUDED_TYPES = new Set([
   'highlighter',
 ]);
 
-const GRIDMAP_NOTE_TYPE = 'affine:note';
+const GRIDMAP_NOTE_TYPE = 'affine:grid-note';
 
 const computeGridSpan = (bound: Bound) => ({
   cols: Math.max(1, Math.round(bound.w / GRIDMAP_GRID_SIZE)),
@@ -57,7 +57,7 @@ const resolveElementType = (
     return undefined;
   }
   if (isNoteBlock(element)) {
-    return GRIDMAP_NOTE_TYPE;
+    return element.flavour;
   }
   return element.type;
 };

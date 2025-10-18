@@ -1,6 +1,7 @@
 export * from './connector.js';
 export * from './doc.js';
 export * from './edgeless-text.js';
+export * from './gridmap.js';
 export * from './image.js';
 export * from './line.js';
 export * from './mindmap.js';

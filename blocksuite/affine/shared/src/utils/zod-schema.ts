@@ -182,6 +182,7 @@ export const NodePropsSchema = z.object({
   mindmap: MindmapSchema,
   'affine:edgeless-text': EdgelessTextZodSchema,
   'affine:note': NoteZodSchema,
+  'affine:grid-note': NoteZodSchema,
   'affine:frame': FrameZodSchema,
   // shapes
   'shape:diamond': ShapeSchema,
