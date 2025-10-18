@@ -22,6 +22,7 @@ import { EdgelessLocker } from './edgeless/edgeless-root-spec';
 import { AltCloneExtension } from './edgeless/interact-extensions/clone-ext';
 import { effects } from './effects';
 import { fallbackKeymap } from './keyboard/keymap';
+import { GridmapToolbarViewExtension } from './gridmap/gridmap-toolbar-extension.js';
 
 export class RootViewExtension extends ViewExtensionProvider {
   override name = 'affine-root-block';
@@ -103,5 +104,6 @@ export class RootViewExtension extends ViewExtensionProvider {
       EdgelessClipboardController,
       AltCloneExtension,
     ]);
+    context.register(GridmapToolbarViewExtension);
   };
 }
