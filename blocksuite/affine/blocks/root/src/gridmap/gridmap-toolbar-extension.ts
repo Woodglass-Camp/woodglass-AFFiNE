@@ -3,7 +3,7 @@ import {
   ViewExtensionProvider,
 } from '@blocksuite/affine-ext-loader';
 import { edgelessToolbarWidget } from '@blocksuite/affine-widget-edgeless-toolbar';
-import { effects as registerEdgelessToolbarElements } from '../../../../widgets/edgeless-toolbar/src/effects.js';
+import { effects as registerEdgelessToolbarElements } from '@blocksuite/affine-widget-edgeless-toolbar/view.js';
 
 export const GRIDMAP_NOTE_CHILD_FLAVOUR = 'affine:paragraph';
 export const GRIDMAP_NOTE_CHILD_TYPE = 'text';
