@@ -1,10 +1,5 @@
-import {
-  type ViewExtensionContext,
-  ViewExtensionProvider,
-} from '@blocksuite/affine-ext-loader';
-import {
-  edgelessToolbarWidget,
-} from '@blocksuite/affine-widget-edgeless-toolbar';
+import type { ViewExtensionContext } from '@blocksuite/affine-ext-loader';
+import { edgelessToolbarWidget } from '@blocksuite/affine-widget-edgeless-toolbar';
 import { EdgelessToolbarViewExtension } from '@blocksuite/affine-widget-edgeless-toolbar/view';
 
 export const GRIDMAP_NOTE_CHILD_FLAVOUR = 'affine:paragraph';
@@ -21,4 +16,3 @@ export class GridmapToolbarViewExtension extends EdgelessToolbarViewExtension {
     }
   }
 }
-
