@@ -1,10 +1,10 @@
 import { DefaultTool } from '@blocksuite/affine-block-surface';
 import { NoteTool } from '@blocksuite/affine-gfx-note';
 import {
-  GRIDMAP_NOTE_CHILD_FLAVOUR,
-  GRIDMAP_NOTE_CHILD_TYPE,
-  GRIDMAP_NOTE_TIP,
-} from './constants.js';
+  DEFAULT_NOTE_CHILD_FLAVOUR,
+  DEFAULT_NOTE_CHILD_TYPE,
+  DEFAULT_NOTE_TIP,
+} from '../edgeless/utils/consts.js';
 import { PageKeyboardManager } from '../keyboard/keyboard-manager.js';
 import type { GridmapRootBlockComponent } from './gridmap-root-block.js';
 import {
@@ -23,9 +23,9 @@ export class GridmapPageKeyboardManager extends PageKeyboardManager {
         },
         n: () => {
           this._setTool(NoteTool, {
-            childFlavour: GRIDMAP_NOTE_CHILD_FLAVOUR,
-            childType: GRIDMAP_NOTE_CHILD_TYPE,
-            tip: GRIDMAP_NOTE_TIP,
+            childFlavour: DEFAULT_NOTE_CHILD_FLAVOUR,
+            childType: DEFAULT_NOTE_CHILD_TYPE,
+            tip: DEFAULT_NOTE_TIP,
           });
         },
       },

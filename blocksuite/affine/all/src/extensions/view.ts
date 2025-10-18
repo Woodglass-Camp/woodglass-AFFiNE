@@ -57,7 +57,6 @@ import { SlashMenuViewExtension } from '@blocksuite/affine-widget-slash-menu/vie
 import { TabletPencilModeViewExtension } from '@blocksuite/affine-widget-tablet-pencil-mode/view';
 import { ToolbarViewExtension } from '@blocksuite/affine-widget-toolbar/view';
 import { ViewportOverlayViewExtension } from '@blocksuite/affine-widget-viewport-overlay/view';
-import { GridmapToolbarViewExtension } from '@blocksuite/affine-widget-gridmap-toolbar/view';
 
 export function getInternalViewExtensions() {
   return [
@@ -124,7 +123,6 @@ export function getInternalViewExtensions() {
     EdgelessSelectedRectViewExtension,
     EdgelessDraggingAreaViewExtension,
     NoteSlicerViewExtension,
-    GridmapToolbarViewExtension,
     EdgelessToolbarViewExtension,
 
     // Fragment
