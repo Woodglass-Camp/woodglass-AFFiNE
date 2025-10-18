@@ -4,6 +4,7 @@ import {
   type SurfaceBlockComponent,
   type SurfaceBlockModel,
 } from '@blocksuite/affine-block-surface';
+import { NoteTool } from '@blocksuite/affine-gfx-note';
 import { PanTool } from '@blocksuite/affine-gfx-pointer';
 import { type RootBlockModel } from '@blocksuite/affine-model';
 import { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-shared/consts';
@@ -17,31 +18,32 @@ import {
   requestConnectedFrame,
   requestThrottledConnectedFrame,
 } from '@blocksuite/affine-shared/utils';
-import { IS_WINDOWS } from '@blocksuite/global/env';
 import { Point, Vec } from '@blocksuite/global/gfx';
-import {
-  BlockComponent,
-  type GfxBlockComponent,
-  type UIEventHandler,
-} from '@blocksuite/std';
+import { BlockComponent, type GfxBlockComponent } from '@blocksuite/std';
 import {
   GfxControllerIdentifier,
   type GfxViewportElement,
 } from '@blocksuite/std/gfx';
 import { effect } from '@preact/signals-core';
 import { css, html } from 'lit';
-import { query } from 'lit/decorators.js';
+import { query, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import type { EdgelessRootService } from '../edgeless/edgeless-root-service.js';
 import { isCanvasElement } from '../edgeless/utils/query.js';
 import { GridmapPageKeyboardManager } from './gridmap-keyboard.js';
 
+const GRIDMAP_NOTE_CHILD_FLAVOUR = 'affine:paragraph';
+const GRIDMAP_NOTE_CHILD_TYPE = 'text';
+const GRIDMAP_NOTE_TIP = 'Text';
+
 export class GridmapRootBlockComponent extends BlockComponent<
   RootBlockModel,
   EdgelessRootService
 > {
   keyboardManager: GridmapPageKeyboardManager | null = null;
+  @state()
+  private accessor _activeTool = DefaultTool.toolName;
 
   static override styles = css`
     affine-gridmap-root {
@@ -86,6 +88,56 @@ export class GridmapRootBlockComponent extends BlockComponent<
     .gridmap-container {
       color: var(--affine-text-primary-color);
       position: relative;
+    }
+
+    .gridmap-toolbar {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--affine-background-overlay-panel-color);
+      border: 1px solid var(--affine-border-color, rgba(0, 0, 0, 0.1));
+      box-shadow: var(--affine-shadow-2);
+      pointer-events: auto;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--affine-text-primary-color);
+      z-index: 2;
+    }
+
+    .gridmap-toolbar button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .gridmap-toolbar button:hover {
+      background: var(--affine-hover-color);
+    }
+
+    .gridmap-toolbar button[data-active='true'] {
+      background: var(--affine-primary-color);
+      color: var(--affine-on-primary-color, #fff);
+    }
+
+    .gridmap-toolbar .divider {
+      width: 1px;
+      height: 18px;
+      background: var(--affine-border-color, rgba(0, 0, 0, 0.08));
+      opacity: 0.7;
     }
 
     @media print {
@@ -278,6 +330,13 @@ export class GridmapRootBlockComponent extends BlockComponent<
       this.gfx.tool.setTool(DefaultTool);
     }
 
+    this._activeTool = this.gfx.tool.currentToolName$.peek();
+    this._disposables.add(
+      this.gfx.tool.currentToolName$.subscribe(name => {
+        this._activeTool = name;
+      })
+    );
+
     this.gfx.viewport.elementReady.next(this.gfxViewportElm);
 
     requestConnectedFrame(() => {
@@ -326,6 +385,24 @@ export class GridmapRootBlockComponent extends BlockComponent<
       <div class="gridmap-mount-point"></div>
 
       <div class="widgets-container">${widgets}</div>
+
+      <div class="gridmap-toolbar">
+        <button
+          type="button"
+          data-active=${this._activeTool === DefaultTool.toolName}
+          @click=${this._activateDefaultTool}
+        >
+          Select
+        </button>
+        <div class="divider"></div>
+        <button
+          type="button"
+          data-active=${this._activeTool === NoteTool.toolName}
+          @click=${this._activateNoteTool}
+        >
+          Note
+        </button>
+      </div>
     `;
   }
 
@@ -340,6 +417,24 @@ export class GridmapRootBlockComponent extends BlockComponent<
 
   @query('affine-surface')
   accessor surface!: SurfaceBlockComponent;
+
+  private readonly _activateDefaultTool = () => {
+    if (this.gfx.selection.editing) {
+      return;
+    }
+    this.gfx.tool.setTool(DefaultTool);
+  };
+
+  private readonly _activateNoteTool = () => {
+    if (this.gfx.selection.editing) {
+      return;
+    }
+    this.gfx.tool.setTool(NoteTool, {
+      childFlavour: GRIDMAP_NOTE_CHILD_FLAVOUR,
+      childType: GRIDMAP_NOTE_CHILD_TYPE,
+      tip: GRIDMAP_NOTE_TIP,
+    });
+  };
 
   private _initRemoteCursor() {
     const overlay = this.std.getOptional(ThemeProvider);
