@@ -12,6 +12,14 @@ export const edgelessNoteContainer = style({
   transformOrigin: '0 0',
   fontWeight: '400',
   lineHeight: cssVar('lineHeight'),
+  selectors: {
+    '&[data-grid-cols][data-grid-rows]': {
+      minWidth:
+        'calc(var(--affine-gridmap-cols) * var(--affine-gridmap-cell-size, 64px))',
+      minHeight:
+        'calc(var(--affine-gridmap-rows) * var(--affine-gridmap-cell-size, 64px))',
+    },
+  },
 });
 
 export const collapseButton = style({

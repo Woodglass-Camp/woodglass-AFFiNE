@@ -3,7 +3,10 @@ import type { DocTitle } from '@blocksuite/affine-fragment-doc-title';
 import { NoteBlockSchema, NoteDisplayMode } from '@blocksuite/affine-model';
 import { focusTextModel } from '@blocksuite/affine-rich-text';
 import { EDGELESS_BLOCK_CHILD_PADDING } from '@blocksuite/affine-shared/consts';
-import { TelemetryProvider } from '@blocksuite/affine-shared/services';
+import {
+  DocModeProvider,
+  TelemetryProvider,
+} from '@blocksuite/affine-shared/services';
 import {
   handleNativeRangeAtPoint,
   stopPropagation,
@@ -253,7 +256,7 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
     const bound = Bound.deserialize(xywh);
     const height = bound.h / scale;
 
-    const style = {
+    const style: Record<string, string> = {
       borderRadius: borderRadius + 'px',
       transform: `scale(${scale})`,
     };
@@ -271,6 +274,14 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
 
     const hasHeader = !!this.std.getOptional(NoteConfigExtension.identifier)
       ?.edgelessNoteHeader;
+    const docMode = this.std.getOptional(DocModeProvider)?.getEditorMode();
+    const gridSpan =
+      docMode === 'gridmap' ? this.model.props.grid ?? null : null;
+
+    if (gridSpan) {
+      style['--affine-gridmap-cols'] = String(gridSpan.cols);
+      style['--affine-gridmap-rows'] = String(gridSpan.rows);
+    }
 
     return html`
       <div
@@ -283,6 +294,8 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
         @mouseleave=${this._leaved}
         @mousemove=${this._hovered}
         data-scale="${scale}"
+        data-grid-cols=${ifDefined(gridSpan ? String(gridSpan.cols) : undefined)}
+        data-grid-rows=${ifDefined(gridSpan ? String(gridSpan.rows) : undefined)}
       >
         <edgeless-note-background
           .editing=${this._editing}

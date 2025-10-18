@@ -13,8 +13,10 @@ import {
   type NoteBlockModel,
   NoteDisplayMode,
 } from '@blocksuite/affine-model';
+import { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-shared/consts';
 import { focusTextModel } from '@blocksuite/affine-rich-text';
 import {
+  DocModeProvider,
   EditPropsStore,
   TelemetryProvider,
 } from '@blocksuite/affine-shared/services';
@@ -302,6 +304,21 @@ function addNoteAtPoint(
     noteIndex,
     scale = 1,
   } = options;
+  const docMode = std.getOptional(DocModeProvider)?.getEditorMode();
+  const isGridmap = docMode === 'gridmap';
+  const snapSizeToGrid = (value: number) =>
+    Math.max(
+      GRIDMAP_GRID_SIZE,
+      Math.ceil(value / GRIDMAP_GRID_SIZE) * GRIDMAP_GRID_SIZE
+    );
+  const snappedWidth = isGridmap ? snapSizeToGrid(width) : width;
+  const snappedHeight = isGridmap ? snapSizeToGrid(height) : height;
+  const gridSpan = isGridmap
+    ? {
+        cols: Math.max(1, Math.round(snappedWidth / GRIDMAP_GRID_SIZE)),
+        rows: Math.max(1, Math.round(snappedHeight / GRIDMAP_GRID_SIZE)),
+      }
+    : undefined;
   const [x, y] = gfx.viewport.toModelCoord(point.x, point.y);
   const blockId = crud.addBlock(
     'affine:note',
@@ -309,10 +326,11 @@ function addNoteAtPoint(
       xywh: serializeXYWH(
         x - offsetX * scale,
         y - offsetY * scale,
-        width,
-        height
+        snappedWidth,
+        snappedHeight
       ),
       displayMode: NoteDisplayMode.EdgelessOnly,
+      ...(gridSpan ? { grid: gridSpan } : {}),
     },
     parentId,
     noteIndex

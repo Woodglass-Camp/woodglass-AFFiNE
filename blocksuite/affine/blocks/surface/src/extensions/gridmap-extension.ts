@@ -1,3 +1,4 @@
+import { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-shared/consts';
 import { DisposableGroup } from '@blocksuite/global/disposable';
 import { Bound } from '@blocksuite/global/gfx';
 import { LifeCycleWatcher } from '@blocksuite/std';
@@ -16,8 +17,8 @@ import {
 
 import type { SurfaceBlockModel } from '../surface-model';
 import { EdgelessCRUDIdentifier } from './crud-extension';
+import { isNoteBlock } from './query';
 
-const GRIDMAP_GRID_SIZE = 64;
 const GRIDMAP_MIN_SIZE = GRIDMAP_GRID_SIZE;
 const GRIDMAP_SNAP_EPSILON = 0.5;
 const GRIDMAP_EXCLUDED_TYPES = new Set([
@@ -26,6 +27,40 @@ const GRIDMAP_EXCLUDED_TYPES = new Set([
   'brush',
   'highlighter',
 ]);
+
+const GRIDMAP_NOTE_TYPE = 'affine:note';
+
+const computeGridSpan = (bound: Bound) => ({
+  cols: Math.max(1, Math.round(bound.w / GRIDMAP_GRID_SIZE)),
+  rows: Math.max(1, Math.round(bound.h / GRIDMAP_GRID_SIZE)),
+});
+
+const withGridSpanProps = <T extends Record<string, unknown>>(
+  props: T,
+  bound: Bound,
+  type: string | undefined
+): T => {
+  if (type !== GRIDMAP_NOTE_TYPE) {
+    return props;
+  }
+
+  return {
+    ...props,
+    grid: computeGridSpan(bound),
+  };
+};
+
+const resolveElementType = (
+  element: GfxPrimitiveElementModel | null
+): string | undefined => {
+  if (!element) {
+    return undefined;
+  }
+  if (isNoteBlock(element)) {
+    return GRIDMAP_NOTE_TYPE;
+  }
+  return element.type;
+};
 
 const snapPosition = (value: number) =>
   Math.round(value / GRIDMAP_GRID_SIZE) * GRIDMAP_GRID_SIZE;
@@ -88,14 +123,21 @@ const snapElement = (surface: SurfaceBlockModel, id: string) => {
 
   const currentBound = Bound.deserialize(element.xywh);
   const snapped = snapBound(currentBound);
+  const elementType = resolveElementType(element);
+  const shouldUpdateBound = !boundsApproximatelyEqual(currentBound, snapped);
 
-  if (boundsApproximatelyEqual(currentBound, snapped)) {
+  if (!shouldUpdateBound && elementType !== GRIDMAP_NOTE_TYPE) {
     return;
   }
 
   const serialized = snapped.serialize();
   surface.store.transact(() => {
-    element.yMap.set('xywh', serialized);
+    if (shouldUpdateBound) {
+      element.yMap.set('xywh', serialized);
+    }
+    if (elementType === GRIDMAP_NOTE_TYPE) {
+      element.yMap.set('grid', computeGridSpan(snapped));
+    }
   });
 };
 
@@ -134,15 +176,18 @@ const snapPropsWithElement = <T extends Record<string, unknown>>(
 
   const currentBound = Bound.deserialize(xywh);
   const snappedBound = snapBound(currentBound);
+  const elementType = resolveElementType(element);
 
   if (boundsApproximatelyEqual(currentBound, snappedBound)) {
-    return props;
+    return withGridSpanProps(props, snappedBound, elementType);
   }
 
-  return {
+  const updatedProps = {
     ...props,
     xywh: snappedBound.serialize(),
   };
+
+  return withGridSpanProps(updatedProps, snappedBound, elementType);
 };
 
 const snapPropsWithType = <T extends Record<string, unknown>>(
@@ -160,13 +205,15 @@ const snapPropsWithType = <T extends Record<string, unknown>>(
   const snappedBound = snapBound(currentBound);
 
   if (boundsApproximatelyEqual(currentBound, snappedBound)) {
-    return props;
+    return withGridSpanProps(props, snappedBound, type);
   }
 
-  return {
+  const updatedProps = {
     ...props,
     xywh: snappedBound.serialize(),
   };
+
+  return withGridSpanProps(updatedProps, snappedBound, type);
 };
 
 export class GridmapSurfaceMiddlewareBuilder extends SurfaceMiddlewareBuilder {

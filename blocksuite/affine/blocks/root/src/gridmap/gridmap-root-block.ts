@@ -6,6 +6,7 @@ import {
 } from '@blocksuite/affine-block-surface';
 import { PanTool } from '@blocksuite/affine-gfx-pointer';
 import { type RootBlockModel } from '@blocksuite/affine-model';
+import { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-shared/consts';
 import {
   FontLoaderService,
   ThemeProvider,
@@ -34,13 +35,14 @@ import { repeat } from 'lit/directives/repeat.js';
 
 import type { EdgelessRootService } from '../edgeless/edgeless-root-service.js';
 import { isCanvasElement } from '../edgeless/utils/query.js';
-
-const GRIDMAP_GRID_SIZE = 64;
+import { GridmapPageKeyboardManager } from './gridmap-keyboard.js';
 
 export class GridmapRootBlockComponent extends BlockComponent<
   RootBlockModel,
   EdgelessRootService
 > {
+  keyboardManager: GridmapPageKeyboardManager | null = null;
+
   static override styles = css`
     affine-gridmap-root {
       -webkit-user-select: none;
@@ -48,6 +50,7 @@ export class GridmapRootBlockComponent extends BlockComponent<
       display: block;
       height: 100%;
       touch-action: none;
+      --affine-gridmap-cell-size: ${GRIDMAP_GRID_SIZE}px;
     }
 
     .widgets-container {
@@ -247,12 +250,14 @@ export class GridmapRootBlockComponent extends BlockComponent<
 
   override connectedCallback(): void {
     super.connectedCallback();
+    this.keyboardManager = new GridmapPageKeyboardManager(this);
     this._initFontLoader();
     this._observeTheme();
   }
 
   override disconnectedCallback(): void {
     this._resizeObserver?.disconnect();
+    this.keyboardManager = null;
     super.disconnectedCallback();
   }
 

@@ -38,6 +38,12 @@ export const NoteZodSchema = z
         shadowType: NoteShadowsSchema,
       }),
     }),
+    grid: z
+      .object({
+        cols: z.number().int().min(1),
+        rows: z.number().int().min(1),
+      })
+      .optional(),
   })
   .default({
     background: DefaultTheme.noteBackgrounColor,
@@ -50,6 +56,7 @@ export const NoteZodSchema = z
         shadowType: DEFAULT_NOTE_SHADOW,
       },
     },
+    grid: undefined,
   });
 
 export const NoteBlockSchema = defineBlockSchema({
@@ -70,6 +77,7 @@ export const NoteBlockSchema = defineBlockSchema({
       },
     },
     comments: undefined,
+    grid: undefined,
   }),
   metadata: {
     version: 1,
@@ -93,6 +101,10 @@ export type NoteProps = {
   displayMode: NoteDisplayMode;
   edgeless: NoteEdgelessProps;
   comments?: Record<string, boolean>;
+  grid?: {
+    cols: number;
+    rows: number;
+  };
   /**
    * @deprecated
    * use `displayMode` instead
