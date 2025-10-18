@@ -106,6 +106,7 @@
     { "path": "./blocksuite/affine/widgets/edgeless-selected-rect" },
     { "path": "./blocksuite/affine/widgets/edgeless-toolbar" },
     { "path": "./blocksuite/affine/widgets/edgeless-zoom-toolbar" },
+    { "path": "./blocksuite/affine/widgets/gridmap-toolbar" },
     { "path": "./blocksuite/affine/widgets/frame-title" },
     { "path": "./blocksuite/affine/widgets/keyboard-toolbar" },
     { "path": "./blocksuite/affine/widgets/linked-doc" },
