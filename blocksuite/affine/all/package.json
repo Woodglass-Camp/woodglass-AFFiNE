@@ -80,7 +80,8 @@
     "@blocksuite/std": "workspace:*",
     "@blocksuite/store": "workspace:*",
     "@blocksuite/sync": "workspace:*",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "@blocksuite/affine-widget-gridmap-toolbar": "workspace:*"
   },
   "exports": {
     ".": "./src/index.ts",
