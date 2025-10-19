@@ -220,30 +220,33 @@ export class GridmapRootBlockComponent extends BlockComponent<
           return;
         }
 
+        event.preventDefault();
+
         const { viewport } = this.gfx;
         if (viewport.locked) return;
 
-        const delta = event.deltaY;
-        const isPinch = isTouchPadPinchEvent(event);
+        const isZoomGesture =
+          isTouchPadPinchEvent(event) || event.ctrlKey || event.metaKey;
 
-        if (event.ctrlKey || event.shiftKey || event.metaKey) {
+        if (isZoomGesture) {
+          const rect = this.getBoundingClientRect();
+          const [baseX, baseY] = this.gfx.viewport.toModelCoord(
+            event.clientX - rect.x,
+            event.clientY - rect.y
+          );
+          const zoom = normalizeWheelDeltaY(event.deltaY, viewport.zoom);
+          viewport.setZoom(zoom, new Point(baseX, baseY), true);
           return;
         }
 
-        if (!isPinch && Math.abs(delta) < 10) {
-          return;
-        }
+        const simulateHorizontalScroll = IS_WINDOWS && event.shiftKey;
+        const dx = simulateHorizontalScroll
+          ? event.deltaY / viewport.zoom
+          : event.deltaX / viewport.zoom;
+        const dy = simulateHorizontalScroll ? 0 : event.deltaY / viewport.zoom;
 
-        event.preventDefault();
-
-        const rect = this.getBoundingClientRect();
-        const [baseX, baseY] = this.gfx.viewport.toModelCoord(
-          event.clientX - rect.x,
-          event.clientY - rect.y
-        );
-
-        const zoom = normalizeWheelDeltaY(delta, viewport.zoom);
-        viewport.setZoom(zoom, new Point(baseX, baseY), true);
+        viewport.applyDeltaCenter(dx, dy);
+        viewport.viewportMoved.next([dx, dy]);
       })
     );
   }
@@ -267,6 +270,7 @@ export class GridmapRootBlockComponent extends BlockComponent<
     this._initFontLoader();
     this._initRemoteCursor();
     this._initLayerUpdateEffect();
+    this._initSlotEffects();
 
     this._initWheelEvent();
     this._initPanEvent();
@@ -393,6 +397,18 @@ export class GridmapRootBlockComponent extends BlockComponent<
 
     resizeObserver.observe(this.viewportElement);
     this._resizeObserver = resizeObserver;
+  }
+
+  private _initSlotEffects() {
+    this._disposables.add(
+      this.std.get(ThemeProvider).theme$.subscribe(() => this.surface.refresh())
+    );
+
+    this._disposables.add(
+      effect(() => {
+        this.style.cursor = this.gfx.cursor$.value;
+      })
+    );
   }
 
   override handlePointerDown(event: PointerEvent) {
