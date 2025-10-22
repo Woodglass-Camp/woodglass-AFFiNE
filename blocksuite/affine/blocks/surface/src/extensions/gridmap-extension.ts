@@ -17,6 +17,7 @@ import {
 
 import type { SurfaceBlockModel } from '../surface-model';
 import { EdgelessCRUDIdentifier } from './crud-extension';
+import { EdgelessLegacySlotIdentifier } from './legacy-slot-extension';
 import { isNoteBlock } from './query';
 
 const GRIDMAP_MIN_SIZE = GRIDMAP_GRID_SIZE;
@@ -387,9 +388,15 @@ export class GridmapSurfaceLifecycleExtension extends LifeCycleWatcher {
     const elementUpdatedSub = surface.elementUpdated.subscribe(({ id }) => {
       snapLater(id);
     });
+    const resizeEndSub = this.std
+      .get(EdgelessLegacySlotIdentifier)
+      .elementResizeEnd.subscribe(() => {
+        snapElements(surface);
+      });
 
     disposables.add(() => elementAddedSub.unsubscribe());
     disposables.add(() => elementUpdatedSub.unsubscribe());
+    disposables.add(() => resizeEndSub.unsubscribe());
 
     const originalUpdate = gfx.updateElement.bind(gfx);
     gfx.updateElement = (element, props) => {

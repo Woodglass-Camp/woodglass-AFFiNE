@@ -16,7 +16,7 @@ export class EdgelessSelectedRectViewExtension extends ViewExtensionProvider {
 
   override setup(context: ViewExtensionContext) {
     super.setup(context);
-    if (context.scope === 'edgeless') {
+    if (context.scope === 'edgeless' || context.scope === 'gridmap') {
       context.register(edgelessSelectedRectWidget);
     }
   }

@@ -6,8 +6,14 @@ import {
   NoteDisplayMode,
 } from '@blocksuite/affine-model';
 import { focusTextModel } from '@blocksuite/affine-rich-text';
-import { EDGELESS_BLOCK_CHILD_PADDING } from '@blocksuite/affine-shared/consts';
-import { TelemetryProvider } from '@blocksuite/affine-shared/services';
+import {
+  EDGELESS_BLOCK_CHILD_PADDING,
+  GRIDMAP_GRID_SIZE,
+} from '@blocksuite/affine-shared/consts';
+import {
+  DocModeProvider,
+  TelemetryProvider,
+} from '@blocksuite/affine-shared/services';
 import {
   handleNativeRangeAtPoint,
   stopPropagation,
@@ -293,8 +299,12 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
         @mouseleave=${this._leaved}
         @mousemove=${this._hovered}
         data-scale="${scale}"
-        data-grid-cols=${ifDefined(gridSpan ? String(gridSpan.cols) : undefined)}
-        data-grid-rows=${ifDefined(gridSpan ? String(gridSpan.rows) : undefined)}
+        data-grid-cols=${ifDefined(
+          gridSpan ? String(gridSpan.cols) : undefined
+        )}
+        data-grid-rows=${ifDefined(
+          gridSpan ? String(gridSpan.rows) : undefined
+        )}
       >
         <edgeless-note-background
           .editing=${this._editing}
@@ -385,6 +395,18 @@ declare global {
   }
 }
 
+const clampGridCells = (value: number, minPx: number, maxPx: number) => {
+  const minCells = Math.max(1, Math.ceil(minPx / GRIDMAP_GRID_SIZE));
+  const maxCellsRaw = maxPx / GRIDMAP_GRID_SIZE;
+  const maxCells = Number.isFinite(maxCellsRaw)
+    ? Math.max(minCells, Math.floor(maxCellsRaw))
+    : Number.MAX_SAFE_INTEGER;
+  const normalized = Number.isFinite(value) ? value : maxCells;
+  return clamp(normalized, minCells, maxCells);
+};
+
+const computeGridSpan = (cols: number, rows: number) => ({ cols, rows });
+
 const createEdgelessNoteInteraction = (flavour: string) =>
   GfxViewInteractionExtension<EdgelessNoteBlockComponent>(flavour, {
     resizeConstraint: {
@@ -400,7 +422,13 @@ const createEdgelessNoteInteraction = (flavour: string) =>
         },
       };
     },
-    handleResize: ({ model }) => {
+    handleResize: ({ model, std }) => {
+      const docMode = std.getOptional(DocModeProvider)?.getEditorMode();
+      const isGridContext = docMode === 'gridmap';
+      const isGridNote =
+        isGridContext &&
+        (model.flavour === GridNoteBlockSchema.model.flavour ||
+          model.props.grid !== undefined);
       const initialScale: number = model.props.edgeless.scale ?? 1;
       return {
         onResizeStart(context): void {
@@ -424,6 +452,24 @@ const createEdgelessNoteInteraction = (flavour: string) =>
           newBound.w = clamp(newBound.w, minWidth * scale, maxWidth);
           newBound.h = clamp(newBound.h, minHeight * scale, maxHeight);
 
+          if (isGridNote) {
+            const rawCols = Math.round(newBound.w / scale / GRIDMAP_GRID_SIZE);
+            const rawRows = Math.round(newBound.h / scale / GRIDMAP_GRID_SIZE);
+
+            const effectiveMinWidth = isGridContext
+              ? GRIDMAP_GRID_SIZE
+              : minWidth;
+            const effectiveMinHeight = isGridContext
+              ? GRIDMAP_GRID_SIZE
+              : minHeight;
+            const cols = clampGridCells(rawCols, effectiveMinWidth, maxWidth);
+            const rows = clampGridCells(rawRows, effectiveMinHeight, maxHeight);
+
+            newBound.w = cols * GRIDMAP_GRID_SIZE * scale;
+            newBound.h = rows * GRIDMAP_GRID_SIZE * scale;
+            model.props.grid = computeGridSpan(cols, rows);
+          }
+
           if (newBound.h > minHeight * scale) {
             edgelessProp.collapse = true;
             edgelessProp.collapsedHeight = newBound.h / scale;
@@ -436,6 +482,24 @@ const createEdgelessNoteInteraction = (flavour: string) =>
         onResizeEnd(context): void {
           context.default(context);
           model.pop('edgeless');
+          if (isGridNote) {
+            const scale = model.props.edgeless.scale ?? initialScale;
+            const bound = Bound.deserialize(model.props.xywh);
+            const grid = model.props.grid ?? {
+              cols: Math.max(
+                1,
+                Math.round(bound.w / scale / GRIDMAP_GRID_SIZE)
+              ),
+              rows: Math.max(
+                1,
+                Math.round(bound.h / scale / GRIDMAP_GRID_SIZE)
+              ),
+            };
+            bound.w = grid.cols * GRIDMAP_GRID_SIZE * scale;
+            bound.h = grid.rows * GRIDMAP_GRID_SIZE * scale;
+            model.props.xywh = bound.serialize();
+            model.props.grid = computeGridSpan(grid.cols, grid.rows);
+          }
         },
       };
     },
