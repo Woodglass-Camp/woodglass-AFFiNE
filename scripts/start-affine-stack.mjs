@@ -22,6 +22,7 @@ const defaultOptions = {
   skipDb: false,
   keepDbOnExit: false,
   stackName: '',
+  redisHost: '127.0.0.1',
   redisPort: 6379,
   mailhogSmtpPort: 1025,
   mailhogHttpPort: 8025,
@@ -39,6 +40,7 @@ Options:
   --server-port <port>      Port for AFFiNE server (default: 3010)
   --web-port <port>         Port for AFFiNE web dev server (default: 8080)
   --stack-name <suffix>     Optional name suffix for docker compose project/volumes
+  --redis-host <host>       Hostname for Redis (default: 127.0.0.1)
   --redis-port <port>       Host port for Redis (default: 6379)
   --mailhog-smtp-port <p>   Host SMTP port for Mailhog/Mailpit (default: 1025)
   --mailhog-http-port <p>   Host HTTP port for Mailhog/Mailpit UI (default: 8025)
@@ -107,6 +109,13 @@ function parseArgs(argv) {
         if (Number.isNaN(options.webPort)) {
           throw new Error('Invalid value for --web-port');
         }
+        break;
+      case '--redis-host':
+        options.redisHost =
+          argv[++i] ??
+          (() => {
+            throw new Error('Missing value for --redis-host');
+          })();
         break;
       case '--redis-port':
         options.redisPort = parseInt(argv[++i] ?? '', 10);
@@ -283,6 +292,8 @@ async function ensureDatabaseInitialized(options, dbEnv) {
     ...process.env,
     ...dbEnv,
     DATABASE_URL: databaseUrl,
+    REDIS_SERVER_HOST: options.redisHost,
+    REDIS_SERVER_PORT: String(options.redisPort),
   };
 
   const serverDir = path.join(repoRoot, 'packages', 'backend', 'server');
@@ -508,6 +519,8 @@ async function main() {
         AFFINE_SERVER_HOST: options.serverHost,
         AFFINE_SERVER_EXTERNAL_URL: `http://${options.serverHost}:${options.serverPort}`,
         DATABASE_URL: databaseUrl,
+        REDIS_SERVER_HOST: options.redisHost,
+        REDIS_SERVER_PORT: String(options.redisPort),
       }
     );
     managedChildren.push(serverChild);

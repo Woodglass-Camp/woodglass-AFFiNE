@@ -26,6 +26,7 @@
      --stage server \
      --stack-name emasi \
      --db-port 55432 \
+     --redis-port 16379 \
      --server-port 3310
    ```
 
