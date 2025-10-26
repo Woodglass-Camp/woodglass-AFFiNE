@@ -2,7 +2,10 @@ import { EDGELESS_BLOCK_CHILD_PADDING } from '@blocksuite/affine-shared/consts';
 import { cssVar } from '@toeverything/theme';
 import { style } from '@vanilla-extract/css';
 
-export const ACTIVE_NOTE_EXTRA_PADDING = 20;
+export const ACTIVE_NOTE_EXTRA_PADDING = 0;
+
+const ACTIVE_NOTE_OUTLINE = 'rgba(48, 74, 190, 0.62)';
+const ACTIVE_NOTE_GLOW = '0 0 0 2px rgba(28, 36, 96, 0.35)';
 
 export const edgelessNoteContainer = style({
   height: '100%',
@@ -12,7 +15,22 @@ export const edgelessNoteContainer = style({
   transformOrigin: '0 0',
   fontWeight: '400',
   lineHeight: cssVar('lineHeight'),
+  position: 'relative',
   selectors: {
+    '&::after': {
+      content: '',
+      position: 'absolute',
+      inset: 0,
+      pointerEvents: 'none',
+      borderRadius: 'inherit',
+      border: '6px solid transparent',
+      boxShadow: 'none',
+      transition: 'border-color 0.18s ease, box-shadow 0.18s ease',
+    },
+    '&[data-editing="true"]::after': {
+      borderColor: ACTIVE_NOTE_OUTLINE,
+      boxShadow: ACTIVE_NOTE_GLOW,
+    },
     '&[data-grid-cols][data-grid-rows]': {
       minWidth:
         'calc(var(--affine-gridmap-cols) * var(--affine-gridmap-cell-size, 64px))',
@@ -53,17 +71,8 @@ export const noteBackground = style({
   top: 0,
   width: '100%',
   height: '100%',
-
-  selectors: {
-    [`${edgelessNoteContainer}[data-editing="true"] &`]: {
-      left: `${-ACTIVE_NOTE_EXTRA_PADDING}px`,
-      top: `${-ACTIVE_NOTE_EXTRA_PADDING}px`,
-      width: `calc(100% + ${ACTIVE_NOTE_EXTRA_PADDING * 2}px)`,
-      height: `calc(100% + ${ACTIVE_NOTE_EXTRA_PADDING * 2}px)`,
-      transition: 'left 0.3s, top 0.3s, width 0.3s, height 0.3s',
-      boxShadow: cssVar('activeShadow'),
-    },
-  },
+  borderRadius: 'inherit',
+  transition: 'box-shadow 0.18s ease',
 });
 
 export const clipContainer = style({
