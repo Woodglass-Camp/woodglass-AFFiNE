@@ -2216,5 +2216,9 @@
   "error.COMMENT_NOT_FOUND": "未找到评论。",
   "error.REPLY_NOT_FOUND": "未找到回复。",
   "error.COMMENT_ATTACHMENT_NOT_FOUND": "未找到评论附件。",
-  "error.COMMENT_ATTACHMENT_QUOTA_EXCEEDED": "您已超出评论附件的大小限制。"
+  "error.COMMENT_ATTACHMENT_QUOTA_EXCEEDED": "您已超出评论附件的大小限制。",
+  "com.affine.page-properties.property.edgelessGridSnap": "Edgeless 网格吸附",
+  "com.affine.page-properties.property.edgelessGridSnap.tooltips": "在 Edgeless 模式下让元素移动和缩放时以 64px 网格为单位吸附，背景仍保持点阵样式。",
+  "com.affine.page-properties.property.edgelessGridSnap.enabled": "开启网格吸附",
+  "com.affine.page-properties.property.edgelessGridSnap.disabled": "自由放置"
 }

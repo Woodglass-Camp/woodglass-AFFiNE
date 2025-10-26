@@ -1,6 +1,11 @@
 import { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-shared/consts';
+import {
+  DocModeProvider,
+  GridSnapProvider,
+} from '@blocksuite/affine-shared/services';
 import { DisposableGroup } from '@blocksuite/global/disposable';
 import { Bound } from '@blocksuite/global/gfx';
+import { effect } from '@preact/signals-core';
 import { LifeCycleWatcher } from '@blocksuite/std';
 import {
   type DragExtensionInitializeContext,
@@ -224,7 +229,23 @@ const snapPropsWithType = <T extends Record<string, unknown>>(
 export class GridmapSurfaceMiddlewareBuilder extends SurfaceMiddlewareBuilder {
   static override key = 'gridmapGridSnap';
 
+  protected isSnapEnabled(): boolean {
+    const docMode = this.std.getOptional(DocModeProvider)?.getEditorMode?.();
+    if (docMode === 'gridmap') {
+      return true;
+    }
+    if (docMode === 'edgeless') {
+      const provider = this.std.getOptional(GridSnapProvider);
+      return provider?.enabled$.value ?? false;
+    }
+    const provider = this.std.getOptional(GridSnapProvider);
+    return provider?.enabled$.value ?? true;
+  }
+
   middleware = ctx => {
+    if (!this.isSnapEnabled()) {
+      return;
+    }
     if (ctx.type !== 'beforeAdd') {
       return;
     }
@@ -241,8 +262,24 @@ export class GridmapSurfaceMiddlewareBuilder extends SurfaceMiddlewareBuilder {
 export class GridmapSnapExtension extends InteractivityExtension {
   static override key = 'gridmap-snap-extension';
 
+  protected isSnapEnabled(): boolean {
+    const docMode = this.std.getOptional(DocModeProvider)?.getEditorMode?.();
+    if (docMode === 'gridmap') {
+      return true;
+    }
+    if (docMode === 'edgeless') {
+      const provider = this.std.getOptional(GridSnapProvider);
+      return provider?.enabled$.value ?? false;
+    }
+    const provider = this.std.getOptional(GridSnapProvider);
+    return provider?.enabled$.value ?? true;
+  }
+
   override mounted(): void {
     this.action.onDragInitialize((context: DragExtensionInitializeContext) => {
+      if (!this.isSnapEnabled()) {
+        return {};
+      }
       const snappable = context.elements
         .map(element => getPrimitiveElement(element))
         .filter(shouldSnapElement);
@@ -258,6 +295,9 @@ export class GridmapSnapExtension extends InteractivityExtension {
 
       return {
         onDragMove: (moveContext: ExtensionDragMoveContext) => {
+          if (!this.isSnapEnabled()) {
+            return;
+          }
           const snappedDx =
             snapPosition(selectionBound.x + moveContext.dx) - selectionBound.x;
           const snappedDy =
@@ -280,6 +320,9 @@ export class GridmapSnapExtension extends InteractivityExtension {
 
       return {
         onResizeMove: (resizeContext: ExtensionElementResizeMoveContext) => {
+          if (!this.isSnapEnabled()) {
+            return {};
+          }
           let nextScaleX = resizeContext.scaleX;
           let nextScaleY = resizeContext.scaleY;
 
@@ -324,11 +367,33 @@ export class GridmapSnapExtension extends InteractivityExtension {
 export class GridmapSurfaceLifecycleExtension extends LifeCycleWatcher {
   static override key = 'gridmap-surface-lifecycle';
 
-  private readonly _disposables = new DisposableGroup();
+  private readonly _snapDisposables = new DisposableGroup();
+  private readonly _listenerDisposables = new DisposableGroup();
   private _setupScheduled = false;
+
+  protected isSnapEnabled(): boolean {
+    const docMode = this.std.getOptional(DocModeProvider)?.getEditorMode?.();
+    if (docMode === 'gridmap') {
+      return true;
+    }
+    if (docMode === 'edgeless') {
+      const provider = this.std.getOptional(GridSnapProvider);
+      return provider?.enabled$.value ?? false;
+    }
+    const provider = this.std.getOptional(GridSnapProvider);
+    return provider?.enabled$.value ?? true;
+  }
 
   override mounted(): void {
     this._scheduleSetup();
+    const provider = this.std.getOptional(GridSnapProvider);
+    if (provider) {
+      const dispose = effect(() => {
+        provider.enabled$.value;
+        this._scheduleSetup();
+      });
+      this._listenerDisposables.add(() => dispose());
+    }
   }
 
   override rendered(): void {
@@ -336,7 +401,8 @@ export class GridmapSurfaceLifecycleExtension extends LifeCycleWatcher {
   }
 
   override unmounted(): void {
-    this._disposables.dispose();
+    this._snapDisposables.dispose();
+    this._listenerDisposables.dispose();
   }
 
   private _scheduleSetup() {
@@ -351,7 +417,11 @@ export class GridmapSurfaceLifecycleExtension extends LifeCycleWatcher {
   }
 
   private _setup() {
-    this._disposables.dispose();
+    this._snapDisposables.dispose();
+
+    if (!this.isSnapEnabled()) {
+      return;
+    }
 
     let gfx;
     try {
@@ -372,15 +442,24 @@ export class GridmapSurfaceLifecycleExtension extends LifeCycleWatcher {
   private _setupSnapping(gfx: GfxController, surface: SurfaceBlockModel) {
     const disposables = new DisposableGroup();
 
+    const shouldSnap = () => this.isSnapEnabled();
+
     const snapById = (id: string) => {
+      if (!shouldSnap()) return;
       snapElement(surface, id);
     };
 
     const snapLater = (id: string) => {
-      requestAnimationFrame(() => snapById(id));
+      if (!shouldSnap()) return;
+      requestAnimationFrame(() => {
+        if (!shouldSnap()) return;
+        snapById(id);
+      });
     };
 
-    snapElements(surface);
+    if (shouldSnap()) {
+      snapElements(surface);
+    }
 
     const elementAddedSub = surface.elementAdded.subscribe(({ id }) => {
       snapLater(id);
@@ -446,6 +525,6 @@ export class GridmapSurfaceLifecycleExtension extends LifeCycleWatcher {
       });
     }
 
-    this._disposables.add(() => disposables.dispose());
+    this._snapDisposables.add(() => disposables.dispose());
   }
 }

@@ -24,6 +24,7 @@ export const AFFiNE_WORKSPACE_DB_SCHEMA = {
     id: f.string().primaryKey(),
     primaryMode: f.string().optional(),
     edgelessColorTheme: f.string().optional(),
+    edgelessGridSnap: f.boolean().optional(),
     journal: f.string().optional(),
     pageWidth: f.string().optional(),
     isTemplate: f.boolean().optional(),

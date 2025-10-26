@@ -2216,5 +2216,9 @@
   "error.COMMENT_NOT_FOUND": "未找到評論。",
   "error.REPLY_NOT_FOUND": "未找到回復。",
   "error.COMMENT_ATTACHMENT_NOT_FOUND": "未找到評論附件。",
-  "error.COMMENT_ATTACHMENT_QUOTA_EXCEEDED": "您已超出評論附件的大小限制。"
+  "error.COMMENT_ATTACHMENT_QUOTA_EXCEEDED": "您已超出評論附件的大小限制。",
+  "com.affine.page-properties.property.edgelessGridSnap": "Edgeless 網格吸附",
+  "com.affine.page-properties.property.edgelessGridSnap.tooltips": "在 Edgeless 模式下讓元素移動與縮放時依 64px 網格吸附，背景仍維持點陣樣式。",
+  "com.affine.page-properties.property.edgelessGridSnap.enabled": "網格吸附開啟",
+  "com.affine.page-properties.property.edgelessGridSnap.disabled": "自由擺放"
 }

@@ -1,0 +1,1 @@
+node scripts/start-affine-stack.mjs        --stage db,server,web        --stack-name emasi        --db-port 55432        --redis-port 16379        --mailhog-smtp-port 1126        --mailhog-http-port 8826        --manticore-port 19309        --server-port 3310        --web-port 8090

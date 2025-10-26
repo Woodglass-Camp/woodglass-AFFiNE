@@ -52,6 +52,12 @@ export const BUILT_IN_CUSTOM_PROPERTY_TYPE: DocCustomPropertyInfo[] = [
     index: 'a0000007',
   },
   {
+    id: 'edgelessGridSnap',
+    type: 'edgelessGridSnap',
+    show: 'always-show',
+    index: 'a00000071',
+  },
+  {
     id: 'pageWidth',
     type: 'pageWidth',
     show: 'always-hide',

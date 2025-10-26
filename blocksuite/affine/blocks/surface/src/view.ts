@@ -47,11 +47,16 @@ export class SurfaceViewExtension extends ViewExtensionProvider {
       return;
     }
     if (this.isEdgeless(context.scope)) {
-      context.register(DefaultTool);
+      context.register([
+        DefaultTool,
+        GridmapSnapExtension,
+        GridmapSurfaceLifecycleExtension,
+        EditPropsMiddlewareBuilder,
+        GridmapSurfaceMiddlewareBuilder,
+      ]);
       context.register(
         BlockViewExtension('affine:surface', literal`affine-surface`)
       );
-      context.register(EditPropsMiddlewareBuilder);
     } else {
       context.register(
         BlockViewExtension('affine:surface', literal`affine-surface-void`)

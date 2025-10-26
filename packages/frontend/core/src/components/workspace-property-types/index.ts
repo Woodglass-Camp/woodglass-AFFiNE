@@ -18,6 +18,7 @@ import {
   TemplateIcon,
   TextIcon,
   TodayIcon,
+  GridIcon,
 } from '@blocksuite/icons/rc';
 
 import type { DocListPropertyProps, GroupHeaderProps } from '../explorer/types';
@@ -64,6 +65,12 @@ import {
   EdgelessThemeGroupHeader,
   EdgelessThemeValue,
 } from './edgeless-theme';
+import {
+  EdgelessGridSnapDocListProperty,
+  EdgelessGridSnapFilterValue,
+  EdgelessGridSnapGroupHeader,
+  EdgelessGridSnapValue,
+} from './edgeless-grid-snap';
 import {
   JournalDocListProperty,
   JournalFilterValue,
@@ -332,6 +339,23 @@ export const WorkspacePropertyTypes = {
     },
     filterValue: EdgelessThemeFilterValue,
     defaultFilter: { method: 'is', value: 'system' },
+  },
+  edgelessGridSnap: {
+    icon: GridIcon,
+    value: EdgelessGridSnapValue,
+    name: 'com.affine.page-properties.property.edgelessGridSnap',
+    description: 'com.affine.page-properties.property.edgelessGridSnap.tooltips',
+    filterMethod: {
+      is: 'com.affine.editCollection.rules.include.is',
+      'is-not': 'com.affine.editCollection.rules.include.is-not',
+    },
+    allowInGroupBy: true,
+    allowInOrderBy: true,
+    filterValue: EdgelessGridSnapFilterValue,
+    showInDocList: 'stack',
+    docListProperty: EdgelessGridSnapDocListProperty,
+    groupHeader: EdgelessGridSnapGroupHeader,
+    defaultFilter: { method: 'is', value: 'false' },
   },
   pageWidth: {
     icon: LongerIcon,

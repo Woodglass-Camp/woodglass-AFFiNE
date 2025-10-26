@@ -4,6 +4,7 @@ import {
 } from '@blocksuite/affine-ext-loader';
 import { NoteBlockSchema } from '@blocksuite/affine-model';
 import {
+  DefaultGridSnapService,
   ToolbarModuleExtension,
   ViewportElementExtension,
 } from '@blocksuite/affine-shared/services';
@@ -76,6 +77,7 @@ export class RootViewExtension extends ViewExtensionProvider {
   private readonly _setupEdgeless = (context: ViewExtensionContext) => {
     context.register([
       EdgelessRootService,
+      DefaultGridSnapService,
       ViewportElementExtension('.affine-edgeless-viewport'),
     ]);
     if (context.scope === 'preview-edgeless') {
@@ -99,6 +101,7 @@ export class RootViewExtension extends ViewExtensionProvider {
   private readonly _setupGridmap = (context: ViewExtensionContext) => {
     context.register([
       EdgelessRootService,
+      DefaultGridSnapService,
       ViewportElementExtension('.affine-gridmap-viewport'),
       BlockViewExtension('affine:page', literal`affine-gridmap-root`),
       EdgelessClipboardController,

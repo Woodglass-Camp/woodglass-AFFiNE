@@ -12,6 +12,7 @@ import {
 } from '@blocksuite/affine-shared/consts';
 import {
   DocModeProvider,
+  GridSnapProvider,
   TelemetryProvider,
 } from '@blocksuite/affine-shared/services';
 import {
@@ -423,12 +424,23 @@ const createEdgelessNoteInteraction = (flavour: string) =>
       };
     },
     handleResize: ({ model, std }) => {
-      const docMode = std.getOptional(DocModeProvider)?.getEditorMode();
-      const isGridContext = docMode === 'gridmap';
-      const isGridNote =
-        isGridContext &&
-        (model.flavour === GridNoteBlockSchema.model.flavour ||
-          model.props.grid !== undefined);
+      const resolveSnapState = () => {
+        const docMode = std.getOptional(DocModeProvider)?.getEditorMode();
+        const snapProvider = std.getOptional(GridSnapProvider);
+        const gridSnapEnabled =
+          docMode === 'gridmap' || (snapProvider?.enabled$.value ?? false);
+        const shouldTreatAsGridNote =
+          gridSnapEnabled &&
+          (docMode === 'gridmap'
+            ? model.flavour === GridNoteBlockSchema.model.flavour ||
+              model.props.grid !== undefined
+            : true);
+        return {
+          gridSnapEnabled,
+          shouldTreatAsGridNote,
+        };
+      };
+
       const initialScale: number = model.props.edgeless.scale ?? 1;
       return {
         onResizeStart(context): void {
@@ -439,6 +451,7 @@ const createEdgelessNoteInteraction = (flavour: string) =>
         onResizeMove(context): void {
           const { originalBound, newBound, lockRatio, constraint } = context;
           const { minWidth, minHeight, maxHeight, maxWidth } = constraint;
+          const { gridSnapEnabled, shouldTreatAsGridNote } = resolveSnapState();
 
           let scale = initialScale;
           let edgelessProp = { ...model.props.edgeless };
@@ -452,14 +465,14 @@ const createEdgelessNoteInteraction = (flavour: string) =>
           newBound.w = clamp(newBound.w, minWidth * scale, maxWidth);
           newBound.h = clamp(newBound.h, minHeight * scale, maxHeight);
 
-          if (isGridNote) {
+          if (shouldTreatAsGridNote) {
             const rawCols = Math.round(newBound.w / scale / GRIDMAP_GRID_SIZE);
             const rawRows = Math.round(newBound.h / scale / GRIDMAP_GRID_SIZE);
 
-            const effectiveMinWidth = isGridContext
+            const effectiveMinWidth = gridSnapEnabled
               ? GRIDMAP_GRID_SIZE
               : minWidth;
-            const effectiveMinHeight = isGridContext
+            const effectiveMinHeight = gridSnapEnabled
               ? GRIDMAP_GRID_SIZE
               : minHeight;
             const cols = clampGridCells(rawCols, effectiveMinWidth, maxWidth);
@@ -482,7 +495,8 @@ const createEdgelessNoteInteraction = (flavour: string) =>
         onResizeEnd(context): void {
           context.default(context);
           model.pop('edgeless');
-          if (isGridNote) {
+          const { gridSnapEnabled, shouldTreatAsGridNote } = resolveSnapState();
+          if (shouldTreatAsGridNote) {
             const scale = model.props.edgeless.scale ?? initialScale;
             const bound = Bound.deserialize(model.props.xywh);
             const grid = model.props.grid ?? {
@@ -498,7 +512,9 @@ const createEdgelessNoteInteraction = (flavour: string) =>
             bound.w = grid.cols * GRIDMAP_GRID_SIZE * scale;
             bound.h = grid.rows * GRIDMAP_GRID_SIZE * scale;
             model.props.xywh = bound.serialize();
-            model.props.grid = computeGridSpan(grid.cols, grid.rows);
+            if (gridSnapEnabled || model.props.grid) {
+              model.props.grid = computeGridSpan(grid.cols, grid.rows);
+            }
           }
         },
       };

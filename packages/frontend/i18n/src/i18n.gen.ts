@@ -3098,6 +3098,10 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.page-properties.property.edgelessTheme"](): string;
     /**
+      * `Edgeless grid snap`
+      */
+    ["com.affine.page-properties.property.edgelessGridSnap"](): string;
+    /**
       * `Page width`
       */
     ["com.affine.page-properties.property.pageWidth"](): string;
@@ -3173,6 +3177,18 @@ export function useAFFiNEI18N(): {
       * `Select the doc theme from Light, Dark, or System. Useful for precise control over content viewing style.`
       */
     ["com.affine.page-properties.property.edgelessTheme.tooltips"](): string;
+    /**
+      * `Align canvas elements to the 64px dotted grid in edgeless mode.`
+      */
+    ["com.affine.page-properties.property.edgelessGridSnap.tooltips"](): string;
+    /**
+      * `Grid snapping on`
+      */
+    ["com.affine.page-properties.property.edgelessGridSnap.enabled"](): string;
+    /**
+      * `Grid snapping off`
+      */
+    ["com.affine.page-properties.property.edgelessGridSnap.disabled"](): string;
     /**
       * `Control the width of this page to fit content display needs.`
       */
