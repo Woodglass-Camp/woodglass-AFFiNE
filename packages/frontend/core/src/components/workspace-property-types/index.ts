@@ -9,6 +9,7 @@ import {
   DateTimeIcon,
   EdgelessIcon,
   FileIcon,
+  GridIcon,
   HistoryIcon,
   LongerIcon,
   MemberIcon,
@@ -58,6 +59,12 @@ import {
   DocPrimaryModeGroupHeader,
   DocPrimaryModeValue,
 } from './doc-primary-mode';
+import {
+  EdgelessGridSnapDocListProperty,
+  EdgelessGridSnapFilterValue,
+  EdgelessGridSnapGroupHeader,
+  EdgelessGridSnapValue,
+} from './edgeless-grid-snap';
 import {
   EdgelessThemeDocListProperty,
   EdgelessThemeFilterValue,
@@ -332,6 +339,24 @@ export const WorkspacePropertyTypes = {
     },
     filterValue: EdgelessThemeFilterValue,
     defaultFilter: { method: 'is', value: 'system' },
+  },
+  edgelessGridSnap: {
+    icon: GridIcon,
+    value: EdgelessGridSnapValue,
+    name: 'com.affine.page-properties.property.edgelessGridSnap',
+    description:
+      'com.affine.page-properties.property.edgelessGridSnap.tooltips',
+    filterMethod: {
+      is: 'com.affine.editCollection.rules.include.is',
+      'is-not': 'com.affine.editCollection.rules.include.is-not',
+    },
+    allowInGroupBy: true,
+    allowInOrderBy: true,
+    filterValue: EdgelessGridSnapFilterValue,
+    showInDocList: 'stack',
+    docListProperty: EdgelessGridSnapDocListProperty,
+    groupHeader: EdgelessGridSnapGroupHeader,
+    defaultFilter: { method: 'is', value: 'false' },
   },
   pageWidth: {
     icon: LongerIcon,

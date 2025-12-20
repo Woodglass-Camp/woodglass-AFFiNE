@@ -14,10 +14,12 @@ import {
   type RootBlockModel,
   type ShapeElementModel,
 } from '@blocksuite/affine-model';
+import { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-shared/consts';
 import {
   EditorSettingProvider,
   EditPropsStore,
   FontLoaderService,
+  GridSnapProvider,
   ThemeProvider,
   ViewportElementProvider,
 } from '@blocksuite/affine-shared/services';
@@ -96,15 +98,24 @@ export class EdgelessRootBlockComponent extends BlockComponent<
     }
   `;
 
+  private _gridSnapEnabled = false;
+
   private readonly _refreshLayerViewport = requestThrottledConnectedFrame(
     () => {
-      const { zoom, translateX, translateY } = this.gfx.viewport;
-      const gap = getBgGridGap(zoom);
+      const { zoom, translateX, translateY, viewScale } = this.gfx.viewport;
+      const gridGap = GRIDMAP_GRID_SIZE * zoom * viewScale;
+      const gap = this._gridSnapEnabled ? gridGap : getBgGridGap(zoom);
+      const offsetX = this._gridSnapEnabled
+        ? translateX - gridGap / 2
+        : translateX;
+      const offsetY = this._gridSnapEnabled
+        ? translateY - gridGap / 2
+        : translateY;
 
       if (this.backgroundElm) {
         this.backgroundElm.style.setProperty(
           'background-position',
-          `${translateX}px ${translateY}px`
+          `${offsetX}px ${offsetY}px`
         );
         this.backgroundElm.style.setProperty(
           'background-size',
@@ -285,6 +296,38 @@ export class EdgelessRootBlockComponent extends BlockComponent<
     );
   }
 
+  private _initGridBackground() {
+    const snapProvider = this.std.getOptional(GridSnapProvider);
+    const themeProvider = this.std.getOptional(ThemeProvider);
+
+    if (!snapProvider && !themeProvider) {
+      return;
+    }
+
+    this._disposables.add(
+      effect(() => {
+        const enabled = snapProvider?.enabled$.value ?? false;
+        const prefersDark = themeProvider?.edgeless$.value === 'dark';
+
+        this._gridSnapEnabled = enabled;
+
+        const baseColor = prefersDark
+          ? 'rgba(255, 255, 255, 0.28)'
+          : 'rgba(0, 0, 0, 0.18)';
+        const highlightColor = prefersDark
+          ? 'rgba(255, 255, 255, 0.48)'
+          : 'rgba(0, 0, 0, 0.32)';
+
+        this.style.setProperty(
+          '--affine-edgeless-grid-color',
+          enabled ? highlightColor : baseColor
+        );
+
+        this._refreshLayerViewport();
+      })
+    );
+  }
+
   private _initViewport() {
     const { std, gfx } = this;
 
@@ -439,6 +482,7 @@ export class EdgelessRootBlockComponent extends BlockComponent<
 
   override firstUpdated() {
     this._initSlotEffects();
+    this._initGridBackground();
     this._initResizeEffect();
     this._initPixelRatioChangeEffect();
     this._initFontLoader();

@@ -10,6 +10,9 @@ import {
   EdgelessCRUDExtension,
   EdgelessLegacySlotExtension,
   EditPropsMiddlewareBuilder,
+  GridmapSnapExtension,
+  GridmapSurfaceLifecycleExtension,
+  GridmapSurfaceMiddlewareBuilder,
 } from './extensions';
 import { ExportManagerExtension } from './extensions/export-manager/export-manager';
 import { DefaultTool } from './tool/default-tool';
@@ -30,12 +33,30 @@ export class SurfaceViewExtension extends ViewExtensionProvider {
       EdgelessLegacySlotExtension,
       ExportManagerExtension,
     ]);
-    if (this.isEdgeless(context.scope)) {
-      context.register(DefaultTool);
+    if (context.scope === 'gridmap') {
+      context.register([
+        DefaultTool,
+        GridmapSnapExtension,
+        GridmapSurfaceLifecycleExtension,
+        EditPropsMiddlewareBuilder,
+        GridmapSurfaceMiddlewareBuilder,
+      ]);
       context.register(
         BlockViewExtension('affine:surface', literal`affine-surface`)
       );
-      context.register(EditPropsMiddlewareBuilder);
+      return;
+    }
+    if (this.isEdgeless(context.scope)) {
+      context.register([
+        DefaultTool,
+        GridmapSnapExtension,
+        GridmapSurfaceLifecycleExtension,
+        EditPropsMiddlewareBuilder,
+        GridmapSurfaceMiddlewareBuilder,
+      ]);
+      context.register(
+        BlockViewExtension('affine:surface', literal`affine-surface`)
+      );
     } else {
       context.register(
         BlockViewExtension('affine:surface', literal`affine-surface-void`)

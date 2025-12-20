@@ -19,6 +19,7 @@ import { patchForAudioEmbedView } from './audio/audio-view';
 import { buildDocDisplayMetaExtension } from './display-meta';
 import { patchDocModeService } from './doc-mode-service';
 import { patchDocUrlExtensions } from './doc-url';
+import { patchEdgelessGridSnapService } from './edgeless-grid-snap';
 import { patchFileSizeLimitExtension } from './file-size-limit';
 import { patchNotificationService } from './notification-service';
 import { patchOpenDocExtension } from './open-doc';
@@ -118,6 +119,7 @@ export class AffineEditorViewExtension extends ViewExtensionProvider<AffineEdito
       const editorService = framework.get(EditorService);
       context.register([
         patchDocModeService(docService, docsService, editorService),
+        patchEdgelessGridSnapService(framework),
       ]);
     }
   }

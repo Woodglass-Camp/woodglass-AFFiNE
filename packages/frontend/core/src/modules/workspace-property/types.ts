@@ -40,6 +40,7 @@ export type WorkspacePropertyTypes = {
   docPrimaryMode: { filter: 'is' | 'is-not' };
   journal: { filter: 'is' | 'is-not' };
   edgelessTheme: { filter: 'is' | 'is-not' };
+  edgelessGridSnap: { filter: 'is' | 'is-not' };
   pageWidth: { filter: 'is' | 'is-not' };
   template: { filter: 'is' | 'is-not' };
   unknown: { filter: never };

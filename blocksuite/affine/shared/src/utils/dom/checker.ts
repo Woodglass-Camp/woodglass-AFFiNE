@@ -16,3 +16,11 @@ export function isInsideEdgelessEditor(host?: EditorHost) {
       v.tagName.toLowerCase() === 'affine-edgeless-root-preview'
   );
 }
+
+export function isInsideGridmapEditor(host?: EditorHost) {
+  if (!host) return false;
+
+  return Array.from(host.children).some(
+    v => v.tagName.toLowerCase() === 'affine-gridmap-root'
+  );
+}

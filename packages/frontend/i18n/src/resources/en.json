@@ -76,6 +76,7 @@
   "Members": "Members",
   "Members hint": "Manage members here, invite new member by email.",
   "New Page": "New doc",
+  "New Gridmap": "New gridmap",
   "Owner": "Owner",
   "Page": "Page",
   "Pen": "Pen",
@@ -2223,5 +2224,9 @@
   "error.COMMENT_NOT_FOUND": "Comment not found.",
   "error.REPLY_NOT_FOUND": "Reply not found.",
   "error.COMMENT_ATTACHMENT_NOT_FOUND": "Comment attachment not found.",
-  "error.COMMENT_ATTACHMENT_QUOTA_EXCEEDED": "You have exceeded the comment attachment size quota."
+  "error.COMMENT_ATTACHMENT_QUOTA_EXCEEDED": "You have exceeded the comment attachment size quota.",
+  "com.affine.page-properties.property.edgelessGridSnap": "Snap to grid",
+  "com.affine.page-properties.property.edgelessGridSnap.tooltips": "Align canvas elements to a dotted 64px grid without changing the background style.",
+  "com.affine.page-properties.property.edgelessGridSnap.enabled": "Grid snapping on",
+  "com.affine.page-properties.property.edgelessGridSnap.disabled": "Grid snapping off"
 }
