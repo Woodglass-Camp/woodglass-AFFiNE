@@ -3,11 +3,11 @@ import {
   ViewExtensionProvider,
 } from '@blocksuite/affine-ext-loader';
 
-import { edgelessToolbarWidget } from './edgeless-toolbar';
 import { effects } from './effects';
+import { tabletPencilModeWidget } from './index';
 
-export class EdgelessToolbarViewExtension extends ViewExtensionProvider {
-  override name = 'affine-edgeless-toolbar-widget';
+export class TabletPencilModeViewExtension extends ViewExtensionProvider {
+  override name = 'affine-tablet-pencil-mode-widget';
 
   override effect() {
     super.effect();
@@ -17,7 +17,7 @@ export class EdgelessToolbarViewExtension extends ViewExtensionProvider {
   override setup(context: ViewExtensionContext) {
     super.setup(context);
     if (context.scope === 'edgeless') {
-      context.register(edgelessToolbarWidget);
+      context.register(tabletPencilModeWidget);
     }
   }
 }

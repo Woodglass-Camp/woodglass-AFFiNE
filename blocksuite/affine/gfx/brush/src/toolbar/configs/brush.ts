@@ -4,6 +4,7 @@ import {
   type PickColorEvent,
 } from '@blocksuite/affine-components/color-picker';
 import {
+  BRUSH_LINE_WIDTHS,
   BrushElementModel,
   DefaultTheme,
   LineWidth,
@@ -44,7 +45,12 @@ export const brushToolbarConfig = {
 
         return html`
           <edgeless-line-width-panel
-            .selectedSize=${lineWidth}
+            .selectedSize=${Number(lineWidth.toFixed(2))}
+            .continuousRange=${{
+              min: 1,
+              max: BRUSH_LINE_WIDTHS[BRUSH_LINE_WIDTHS.length - 1] ?? lineWidth,
+              step: 0.1,
+            }}
             @select=${onPick}
           >
           </edgeless-line-width-panel>

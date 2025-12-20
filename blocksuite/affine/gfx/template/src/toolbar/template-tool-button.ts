@@ -182,9 +182,12 @@ export class EdgelessTemplateButton extends EdgelessToolbarToolMixin(
     requestAnimationFrame(() => {
       const arrowEl = panel.renderRoot.querySelector('.arrow') as HTMLElement;
       this._autoUpdateCleanup?.();
+      const placement =
+        this.toolbar?.toolbarPosition === 'top' ? 'bottom' : 'top';
+      panel.dataset.placement = placement;
       this._autoUpdateCleanup = autoUpdate(this, panel, () => {
         computePosition(this, panel, {
-          placement: 'top',
+          placement,
           middleware: [offset(20), arrow({ element: arrowEl }), shift()],
         })
           .then(({ x, y, middlewareData }) => {
@@ -193,6 +196,9 @@ export class EdgelessTemplateButton extends EdgelessToolbarToolMixin(
 
             arrowEl.style.left = `${
               (middlewareData.arrow?.x ?? 0) - (middlewareData.shift?.x ?? 0)
+            }px`;
+            arrowEl.style.top = `${
+              (middlewareData.arrow?.y ?? 0) - (middlewareData.shift?.y ?? 0)
             }px`;
           })
           .catch(e => {

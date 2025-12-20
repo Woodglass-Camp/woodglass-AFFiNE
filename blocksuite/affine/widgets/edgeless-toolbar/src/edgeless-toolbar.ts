@@ -14,6 +14,7 @@ import {
 } from '@blocksuite/affine-components/toolbar';
 import { ColorScheme, type RootBlockModel } from '@blocksuite/affine-model';
 import {
+  EditorSettingProvider,
   EditPropsStore,
   ThemeProvider,
 } from '@blocksuite/affine-shared/services';
@@ -29,6 +30,7 @@ import { autoPlacement, offset } from '@floating-ui/dom';
 import { ContextProvider } from '@lit/context';
 import { computed } from '@preact/signals-core';
 import { baseTheme, cssVar } from '@toeverything/theme';
+import type { PropertyValues } from 'lit';
 import { css, html, nothing, unsafeCSS } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -75,6 +77,10 @@ export class EdgelessToolbarWidget extends WidgetComponent<RootBlockModel> {
       width: 100%;
       pointer-events: none;
     }
+    :host([data-position='top']) {
+      top: 0;
+      bottom: auto;
+    }
     .edgeless-toolbar-wrapper {
       width: 100%;
       display: flex;
@@ -90,6 +96,10 @@ export class EdgelessToolbarWidget extends WidgetComponent<RootBlockModel> {
       max-width: calc(100% - ${unsafeCSS(SAFE_AREA_WIDTH)}px * 2);
       min-width: 264px;
     }
+    :host([data-position='top']) .edgeless-toolbar-toggle-control {
+      padding-bottom: 0;
+      padding-top: 16px;
+    }
     .edgeless-toolbar-toggle-control[data-enable='true'] {
       transition: 0.23s ease;
       padding-top: 100px;
@@ -97,6 +107,17 @@ export class EdgelessToolbarWidget extends WidgetComponent<RootBlockModel> {
     }
     .edgeless-toolbar-toggle-control[data-enable='true']:hover {
       padding-top: 0;
+      transform: translateY(0);
+    }
+    :host([data-position='top'])
+      .edgeless-toolbar-toggle-control[data-enable='true'] {
+      padding-top: 0;
+      padding-bottom: 100px;
+      transform: translateY(-100px);
+    }
+    :host([data-position='top'])
+      .edgeless-toolbar-toggle-control[data-enable='true']:hover {
+      padding-bottom: 0;
       transform: translateY(0);
     }
 
@@ -119,6 +140,11 @@ export class EdgelessToolbarWidget extends WidgetComponent<RootBlockModel> {
       position: absolute;
       bottom: 8px;
       transform: translateY(-100%);
+    }
+    :host([data-position='top']) .edgeless-toolbar-container[level='second'] {
+      bottom: auto;
+      top: 8px;
+      transform: translateY(100%);
     }
     .edgeless-toolbar-container[hidden] {
       display: none;
@@ -486,15 +512,20 @@ export class EdgelessToolbarWidget extends WidgetComponent<RootBlockModel> {
     if (!this._hiddenQuickTools.length) return;
 
     this._moreQuickToolsMenuRef = e.currentTarget;
+    const allowedPlacements =
+      this.toolbarPosition === 'top' ? ['bottom'] : ['top'];
+    const mainAxisOffset =
+      ((TOOLBAR_HEIGHT - QUICK_TOOL_MORE_SIZE) / 2 + 8) *
+      (this.toolbarPosition === 'top' ? -1 : 1);
     this._moreQuickToolsMenu = popMenu(
       popupTargetFromElement(e.currentTarget as HTMLElement),
       {
         middleware: [
           autoPlacement({
-            allowedPlacements: ['top'],
+            allowedPlacements,
           }),
           offset({
-            mainAxis: (TOOLBAR_HEIGHT - QUICK_TOOL_MORE_SIZE) / 2 + 8,
+            mainAxis: mainAxisOffset,
           }),
         ],
         options: {
@@ -584,6 +615,21 @@ export class EdgelessToolbarWidget extends WidgetComponent<RootBlockModel> {
   override connectedCallback() {
     super.connectedCallback();
     this._toolbarProvider.setValue(this);
+    this.dataset.position = this.toolbarPosition;
+    const editorSetting = this.std.getOptional(EditorSettingProvider);
+    if (editorSetting) {
+      const applyPosition = (value: unknown) => {
+        const pos =
+          (value as { edgelessToolbarPosition?: 'bottom' | 'top' })
+            ?.edgelessToolbarPosition ?? 'bottom';
+        this.toolbarPosition = pos === 'top' ? 'top' : 'bottom';
+      };
+      const sub = editorSetting.setting$.subscribe(current => {
+        applyPosition(current);
+      });
+      this._disposables.add({ dispose: () => sub.unsubscribe() });
+      applyPosition(editorSetting.setting$.peek());
+    }
     this._resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -657,6 +703,16 @@ export class EdgelessToolbarWidget extends WidgetComponent<RootBlockModel> {
       })
     );
   }
+
+  protected override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+    if (changedProperties.has('toolbarPosition')) {
+      this.dataset.position = this.toolbarPosition;
+    }
+  }
+
+  @state()
+  accessor toolbarPosition: 'bottom' | 'top' = 'bottom';
 
   override render() {
     const type = this.edgelessTool;

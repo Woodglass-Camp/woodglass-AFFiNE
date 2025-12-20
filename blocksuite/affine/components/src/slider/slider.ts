@@ -8,7 +8,7 @@ import { repeat } from 'lit/directives/repeat.js';
 
 import { styles } from './styles';
 import type { SliderRange, SliderSelectEvent, SliderStyle } from './types';
-import { isDiscreteRange } from './utils';
+import { isContinuousRange, isSliderRange } from './utils';
 
 const defaultSliderStyle: SliderStyle = {
   width: '100%',
@@ -18,7 +18,7 @@ const defaultSliderStyle: SliderStyle = {
 };
 
 @requiredProperties({
-  range: PropTypes.of(isDiscreteRange),
+  range: PropTypes.of(isSliderRange),
 })
 export class Slider extends WithDisposable(LitElement) {
   static override styles = styles;
@@ -56,27 +56,45 @@ export class Slider extends WithDisposable(LitElement) {
   }
 
   private _updateLineWidthPanelByDragHandlePosition(x: number) {
-    // Calculate the selected size based on the drag handle position.
-    // Need to select the nearest size.
-
     const {
-      _sliderStyle: { itemSize },
+      _sliderStyle: { itemSize, dragHandleSize },
     } = this;
 
     const width = this.getBoundingClientRect().width;
+    const halfItemSize = itemSize / 2;
+    const halfDragHandleSize = dragHandleSize / 2;
+    const padding = Math.max(halfItemSize, halfDragHandleSize);
+    const trackLength = Math.max(width - padding * 2, 0);
+    const ratio =
+      trackLength === 0 ? 0 : clamp((x - padding) / trackLength, 0, 1);
+
+    if (isContinuousRange(this.range)) {
+      const { min, max, step } = this.range;
+      const span = max - min || 1;
+      const raw = min + ratio * span;
+      const selected = clamp(
+        Number((Math.round(raw / step) * step).toFixed(2)),
+        Math.min(min, max),
+        Math.max(min, max)
+      );
+      const displayRatio =
+        span === 0 ? 0 : clamp((selected - min) / span, 0, 1);
+      this.style.setProperty('--cursor-ratio', `${displayRatio}`);
+      this._onSelect(selected);
+      return;
+    }
 
     const { points } = this.range;
     const count = points.length;
+    if (count === 0) return;
 
-    const targetWidth = width - itemSize;
-    const halfItemSize = itemSize / 2;
-    const offsetX = halfItemSize + (width - itemSize * count) / (count - 1) / 2;
-    const selectedSize = points.findLast((_, n) => {
-      const cx = halfItemSize + (n / (count - 1)) * targetWidth;
-      return x >= cx - offsetX && x < cx + offsetX;
-    });
-    if (!selectedSize) return;
+    const index = count === 1 ? 0 : Math.round(ratio * (count - 1));
+    const clampedIndex = clamp(index, 0, count - 1);
+    const selectedSize = points[clampedIndex];
+    if (selectedSize === undefined) return;
 
+    const displayRatio = count <= 1 ? 0 : clampedIndex / (count - 1);
+    this.style.setProperty('--cursor-ratio', `${displayRatio}`);
     this._onSelect(selectedSize);
   }
 
@@ -107,6 +125,7 @@ export class Slider extends WithDisposable(LitElement) {
   override connectedCallback() {
     super.connectedCallback();
 
+    this.style.setProperty('--cursor-ratio', '0');
     this._disposables.addFromEvent(this, 'pointerdown', this._onPointerDown);
     this._disposables.addFromEvent(this, 'click', e => {
       e.stopPropagation();
@@ -125,18 +144,78 @@ export class Slider extends WithDisposable(LitElement) {
       style.setProperty('--drag-handle-size', `${dragHandleSize}px`);
     }
     if (changedProperties.has('range')) {
-      style.setProperty('--count', `${this.range.points.length}`);
+      if (isContinuousRange(this.range)) {
+        const { min, max, step } = this.range;
+        const count = Math.max(Math.round((max - min) / step), 1) + 1;
+        style.setProperty('--count', `${count}`);
+        this.toggleAttribute('data-continuous', true);
+      } else {
+        style.setProperty('--count', `${this.range.points.length}`);
+        this.toggleAttribute('data-continuous', false);
+      }
     }
-    if (changedProperties.has('value')) {
-      const index = this.range.points.findIndex(p => p === this.value);
-      style.setProperty('--cursor', `${index}`);
+    if (
+      changedProperties.has('value') ||
+      changedProperties.has('range') ||
+      changedProperties.has('sliderStyle')
+    ) {
+      this._updateCursorRatio();
     }
   }
 
+  private _updateCursorRatio() {
+    if (!this.range) {
+      this.style.setProperty('--cursor-ratio', '0');
+      return;
+    }
+
+    if (isContinuousRange(this.range)) {
+      const { min, max } = this.range;
+      const span = max - min || 1;
+      const ratio = span === 0 ? 0 : clamp((this.value - min) / span, 0, 1);
+      this.style.setProperty('--cursor-ratio', `${ratio}`);
+      return;
+    }
+
+    const { points } = this.range;
+    const count = points.length;
+    if (count === 0) {
+      this.style.setProperty('--cursor-ratio', '0');
+      return;
+    }
+
+    const index = points.findIndex(p => p === this.value);
+    const nearestIndex =
+      index !== -1 ? index : this._findNearestIndex(points, this.value);
+    const denominator = count <= 1 ? 1 : count - 1;
+    const ratio = clamp(nearestIndex / denominator, 0, 1);
+    this.style.setProperty('--cursor-ratio', `${ratio}`);
+  }
+
+  private _findNearestIndex(points: number[], value: number): number {
+    if (!points.length) {
+      return 0;
+    }
+
+    let nearestIndex = 0;
+    let minDiff = Math.abs(points[0] - value);
+    for (let i = 1; i < points.length; i++) {
+      const diff = Math.abs(points[i] - value);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearestIndex = i;
+      }
+    }
+    return nearestIndex;
+  }
+
   override render() {
+    const pointsToRender = isContinuousRange(this.range)
+      ? [this.range.min, this.range.max]
+      : this.range.points;
     return html`<div class="slider-container">
       ${repeat(
-        this.range.points,
+        pointsToRender,
         w => w,
         (w, n) =>
           html`<div

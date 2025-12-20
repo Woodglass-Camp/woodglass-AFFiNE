@@ -194,6 +194,11 @@ export class EdgelessTemplatePanel extends WithDisposable(LitElement) {
       transform: translateY(20px);
       color: var(--affine-background-overlay-panel-color);
     }
+    :host([data-placement='bottom']) .arrow {
+      top: 0;
+      bottom: auto;
+      transform: translateY(-20px) rotate(180deg);
+    }
   `;
 
   static templates = builtInTemplates;

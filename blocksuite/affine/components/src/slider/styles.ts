@@ -13,10 +13,14 @@ export const styles = css`
   }
 
   .slider-container {
-    --drag-handle-center-x: calc(
-      (var(--item-size) - var(--drag-handle-size)) / 2 +
-        (var(--cursor) / (var(--count) - 1)) *
-        calc(var(--width) - var(--item-size))
+    --track-start: max(
+      calc(var(--item-size) / 2),
+      calc(var(--drag-handle-size) / 2)
+    );
+    --track-length: max(calc(var(--width) - 2 * var(--track-start)), 0px);
+    --drag-handle-left: calc(
+      var(--track-start) - var(--drag-handle-size) / 2 +
+        var(--cursor-ratio, 0) * var(--track-length)
     );
 
     width: var(--width);
@@ -38,6 +42,10 @@ export const styles = css`
     z-index: 2;
   }
 
+  :host([data-continuous]) .point-button {
+    display: none;
+  }
+
   .point-circle {
     width: var(--item-icon-size);
     height: var(--item-icon-size);
@@ -56,24 +64,24 @@ export const styles = css`
     border-radius: 50%;
     background-color: ${unsafeCSSVarV2('icon/primary')};
     z-index: 3;
-    left: var(--drag-handle-center-x);
+    left: var(--drag-handle-left);
   }
 
   .bottom-line,
   .slider-selected-overlay {
     position: absolute;
     height: 1px;
-    left: calc(var(--item-size) / 2);
+    left: var(--track-start);
   }
 
   .bottom-line {
-    width: calc(100% - var(--item-size));
+    width: var(--track-length);
     background-color: ${unsafeCSSVarV2('layer/insideBorder/border')};
   }
 
   .slider-selected-overlay {
     background-color: ${unsafeCSSVarV2('icon/primary')};
     z-index: 1;
-    width: var(--drag-handle-center-x);
+    width: calc(var(--cursor-ratio, 0) * var(--track-length));
   }
 `;

@@ -57,15 +57,14 @@ export const highlighterToolbarConfig = {
 
         return html`
           <edgeless-line-width-panel
-            .config=${{
-              width: 140,
-              itemSize: 16,
-              itemIconSize: 8,
-              dragHandleSize: 14,
-              count: HIGHLIGHTER_LINE_WIDTHS.length,
+            .continuousRange=${{
+              min: HIGHLIGHTER_LINE_WIDTHS[0],
+              max:
+                HIGHLIGHTER_LINE_WIDTHS[HIGHLIGHTER_LINE_WIDTHS.length - 1] ??
+                lineWidth,
+              step: 0.1,
             }}
-            .lineWidths=${HIGHLIGHTER_LINE_WIDTHS}
-            .selectedSize=${lineWidth}
+            .selectedSize=${Number(lineWidth.toFixed(2))}
             @select=${onPick}
           >
           </edgeless-line-width-panel>
