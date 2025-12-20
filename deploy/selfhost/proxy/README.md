@@ -12,16 +12,42 @@
 
 ## 使用
 
-启用：
+1. 一键安装/配置 redsocks（构建机本机）
 
 ```bash
-bash deploy/selfhost/proxy/enable-docker0-transparent-proxy.sh
+bash deploy/selfhost/proxy/setup-redsocks.sh
 ```
 
-回滚：
+默认行为：
+
+- 本地透明入口：`127.0.0.1:12345`
+- 上游显式代理：`192.168.195.1:7890`（Clash `mixed-port`，按 socks5 使用）
+
+如需自定义（示例）：
+
+```bash
+PROXY_SERVER_HOST=192.168.195.1 PROXY_SERVER_PORT=7890 REDSOCKS_LOCAL_PORT=12345 \
+  bash deploy/selfhost/proxy/setup-redsocks.sh
+```
+
+2. 启用 docker0 透明代理（只拦 `docker0`，只拦 `80/443`）
+
+```bash
+REDIR_PORT=12345 PROXY_SERVER_IP=192.168.195.1 \
+  bash deploy/selfhost/proxy/enable-docker0-transparent-proxy.sh
+```
+
+3. 检查
+
+```bash
+bash deploy/selfhost/proxy/check-redsocks.sh
+```
+
+4. 回滚（先撤销 iptables，再停 redsocks）
 
 ```bash
 bash deploy/selfhost/proxy/disable-docker0-transparent-proxy.sh
+bash deploy/selfhost/proxy/stop-redsocks.sh
 ```
 
 可配置环境变量：
