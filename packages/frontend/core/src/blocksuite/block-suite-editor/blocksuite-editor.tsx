@@ -1,6 +1,7 @@
 import { EditorLoading } from '@affine/component/page-detail-skeleton';
 import type {
   EdgelessEditor,
+  GridmapEditor,
   PageEditor,
 } from '@affine/core/blocksuite/editors';
 import { ServerService } from '@affine/core/modules/cloud';
@@ -32,7 +33,11 @@ import type { CSSProperties, HTMLAttributes } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { DefaultOpenProperty } from '../../components/properties';
-import { BlocksuiteDocEditor, BlocksuiteEdgelessEditor } from './lit-adaper';
+import {
+  BlocksuiteDocEditor,
+  BlocksuiteEdgelessEditor,
+  BlocksuiteGridmapEditor,
+} from './lit-adaper';
 import * as styles from './styles.css';
 
 export interface AffineEditorContainer extends HTMLElement {
@@ -72,6 +77,7 @@ const BlockSuiteEditorImpl = ({
   const docRef = useRef<PageEditor>(null);
   const docTitleRef = useRef<DocTitle>(null);
   const edgelessRef = useRef<EdgelessEditor>(null);
+  const gridmapRef = useRef<GridmapEditor>(null);
   const featureFlags = useService(FeatureFlagService).flags;
   const enableEditorRTL = useLiveData(featureFlags.enable_editor_rtl.$);
   const editorSetting = useService(EditorSettingService).editorSetting;
@@ -101,7 +107,9 @@ const BlockSuiteEditorImpl = ({
         return (
           (mode === 'page'
             ? docRef.current?.host
-            : edgelessRef.current?.host) ?? null
+            : mode === 'gridmap'
+              ? gridmapRef.current?.host
+              : edgelessRef.current?.host) ?? null
         );
       },
       get model() {
@@ -110,7 +118,9 @@ const BlockSuiteEditorImpl = ({
       get updateComplete() {
         return mode === 'page'
           ? docRef.current?.updateComplete
-          : edgelessRef.current?.updateComplete;
+          : mode === 'gridmap'
+            ? gridmapRef.current?.updateComplete
+            : edgelessRef.current?.updateComplete;
       },
       get mode() {
         return mode;
@@ -119,7 +129,13 @@ const BlockSuiteEditorImpl = ({
         return rootRef.current;
       },
       get std() {
-        return mode === 'page' ? docRef.current?.std : edgelessRef.current?.std;
+        if (mode === 'page') {
+          return docRef.current?.std;
+        }
+        if (mode === 'gridmap') {
+          return gridmapRef.current?.std;
+        }
+        return edgelessRef.current?.std;
       },
     };
 
@@ -266,6 +282,8 @@ const BlockSuiteEditorImpl = ({
           onClickBlank={handleClickPageModeBlank}
           defaultOpenProperty={defaultOpenProperty}
         />
+      ) : mode === 'gridmap' ? (
+        <BlocksuiteGridmapEditor shared={shared} page={page} ref={gridmapRef} />
       ) : (
         <BlocksuiteEdgelessEditor
           shared={shared}

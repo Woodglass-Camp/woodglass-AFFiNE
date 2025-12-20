@@ -22,6 +22,7 @@ import { EdgelessElementToolbarExtension } from './edgeless/configs/toolbar';
 import { EdgelessLocker } from './edgeless/edgeless-root-spec';
 import { AltCloneExtension } from './edgeless/interact-extensions/clone-ext';
 import { effects } from './effects';
+import { registerGridmapToolbar } from './gridmap/gridmap-toolbar-extension.js';
 import { fallbackKeymap } from './keyboard/keymap';
 
 export class RootViewExtension extends ViewExtensionProvider {
@@ -48,8 +49,12 @@ export class RootViewExtension extends ViewExtensionProvider {
     ) {
       context.register(ReadOnlyClipboard);
     }
-    if (this.isEdgeless(context.scope)) {
+    if (context.scope === 'edgeless') {
       this._setupEdgeless(context);
+      return;
+    }
+    if (context.scope === 'gridmap') {
+      this._setupGridmap(context);
       return;
     }
     this._setupPage(context);
@@ -91,5 +96,17 @@ export class RootViewExtension extends ViewExtensionProvider {
       AltCloneExtension,
     ]);
     context.register(EdgelessElementToolbarExtension);
+  };
+
+  private readonly _setupGridmap = (context: ViewExtensionContext) => {
+    context.register([
+      EdgelessRootService,
+      DefaultGridSnapService,
+      ViewportElementExtension('.affine-gridmap-viewport'),
+      BlockViewExtension('affine:page', literal`affine-gridmap-root`),
+      EdgelessClipboardController,
+      AltCloneExtension,
+    ]);
+    context.register(registerGridmapToolbar());
   };
 }
