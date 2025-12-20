@@ -14,6 +14,8 @@
 bash deploy/selfhost/build-image.sh woodglass-affine:$(git rev-parse --short HEAD)
 ```
 
+说明：脚本优先使用 `docker buildx`，若本机未安装 buildx 会自动回退到 `docker build`。
+
 打包成可传输的离线镜像包：
 
 ```bash

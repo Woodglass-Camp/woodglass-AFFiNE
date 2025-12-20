@@ -18,12 +18,22 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 
 echo "Building image: $image_tag ($platform)"
-docker buildx build \
-  --platform "$platform" \
-  -f deploy/selfhost/Dockerfile \
-  -t "$image_tag" \
-  --load \
-  .
+if docker buildx version >/dev/null 2>&1; then
+  docker buildx build \
+    --platform "$platform" \
+    -f deploy/selfhost/Dockerfile \
+    -t "$image_tag" \
+    --load \
+    .
+else
+  echo "docker buildx not found; falling back to 'docker build'." >&2
+  echo "Tip: install buildx for faster/multi-arch builds: https://docs.docker.com/go/buildx/" >&2
+  docker build \
+    --platform "$platform" \
+    -f deploy/selfhost/Dockerfile \
+    -t "$image_tag" \
+    .
+fi
 
 echo "Built image: $image_tag"
 echo "Next: bash deploy/selfhost/pack-image.sh $image_tag"
