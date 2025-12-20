@@ -123,3 +123,8 @@ export const NoteSlashMenuConfigExtension = SlashMenuConfigExtension(
   'affine:note',
   noteSlashMenuConfig
 );
+
+export const GridNoteSlashMenuConfigExtension = SlashMenuConfigExtension(
+  'affine:grid-note',
+  noteSlashMenuConfig
+);

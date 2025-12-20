@@ -1,5 +1,6 @@
 import {
   CodeBlockModel,
+  GridNoteBlockSchema,
   ListBlockModel,
   NoteBlockModel,
   NoteBlockSchema,
@@ -607,5 +608,12 @@ export const NoteKeymapExtension = KeymapExtension(
   std => new NoteKeymap(std).hotKeys,
   {
     flavour: NoteBlockSchema.model.flavour,
+  }
+);
+
+export const GridNoteKeymapExtension = KeymapExtension(
+  std => new NoteKeymap(std).hotKeys,
+  {
+    flavour: GridNoteBlockSchema.model.flavour,
   }
 );

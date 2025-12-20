@@ -33,7 +33,7 @@ export const DatabaseBlockSchema = defineBlockSchema({
   metadata: {
     role: 'hub',
     version: 3,
-    parent: ['affine:note'],
+    parent: ['affine:note', 'affine:grid-note'],
     children: ['affine:paragraph', 'affine:list'],
   },
   toModel: () => new DatabaseBlockModel(),

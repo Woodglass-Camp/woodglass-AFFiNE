@@ -518,7 +518,8 @@ class PasteTr {
 }
 
 function flatNote(snapshot: SliceSnapshot) {
-  if (snapshot.content[0]?.flavour === 'affine:note') {
+  const flavour = snapshot.content[0]?.flavour;
+  if (flavour === 'affine:note' || flavour === 'affine:grid-note') {
     snapshot.content = snapshot.content[0].children;
   }
 }

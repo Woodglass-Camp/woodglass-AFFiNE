@@ -91,6 +91,7 @@ export const AttachmentBlockSchema = defineBlockSchema({
     role: 'content',
     parent: [
       'affine:note',
+      'affine:grid-note',
       'affine:surface',
       'affine:edgeless-text',
       'affine:paragraph',

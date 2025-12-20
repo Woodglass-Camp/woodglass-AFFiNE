@@ -5,6 +5,8 @@ import {
   defineBlockSchema,
 } from '@blocksuite/store';
 
+import { NOTE_BLOCK_FLAVOURS } from '../note/note-model.js';
+
 export type RootBlockProps = {
   title: Text;
 };
@@ -42,7 +44,13 @@ export class RootBlockModel extends BlockModel<RootBlockProps> {
     for (const child of this.children) {
       empty = empty && child.isEmpty();
 
-      if (child.flavour === 'affine:note') numNotes++;
+      if (
+        NOTE_BLOCK_FLAVOURS.includes(
+          child.flavour as (typeof NOTE_BLOCK_FLAVOURS)[number]
+        )
+      ) {
+        numNotes++;
+      }
       if (numNotes > 1) return false;
     }
 

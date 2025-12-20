@@ -1,12 +1,13 @@
 import { z } from 'zod';
 
 import { createEnumMap } from '../utils/enum.js';
+import { GRIDMAP_GRID_SIZE } from './gridmap';
 
 export const NOTE_MIN_WIDTH = 170 + 24 * 2;
 export const NOTE_MIN_HEIGHT = 92;
 
-export const DEFAULT_NOTE_WIDTH = 450 + 24 * 2;
-export const DEFAULT_NOTE_HEIGHT = NOTE_MIN_HEIGHT;
+export const DEFAULT_NOTE_WIDTH = GRIDMAP_GRID_SIZE * 6;
+export const DEFAULT_NOTE_HEIGHT = GRIDMAP_GRID_SIZE * 2;
 
 export const DEFAULT_PAGE_BLOCK_WIDTH = 800;
 export const DEFAULT_PAGE_BLOCK_HEIGHT = DEFAULT_NOTE_HEIGHT;

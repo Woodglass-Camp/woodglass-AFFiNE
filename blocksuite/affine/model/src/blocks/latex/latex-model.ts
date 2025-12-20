@@ -30,6 +30,7 @@ export const LatexBlockSchema = defineBlockSchema({
     role: 'content',
     parent: [
       'affine:note',
+      'affine:grid-note',
       'affine:edgeless-text',
       'affine:paragraph',
       'affine:list',

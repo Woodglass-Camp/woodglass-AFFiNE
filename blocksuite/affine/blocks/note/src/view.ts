@@ -2,18 +2,40 @@ import {
   type ViewExtensionContext,
   ViewExtensionProvider,
 } from '@blocksuite/affine-ext-loader';
-import { NoteBlockSchema } from '@blocksuite/affine-model';
+import { GridNoteBlockSchema, NoteBlockSchema } from '@blocksuite/affine-model';
 import { BlockViewExtension, FlavourExtension } from '@blocksuite/std';
 import { literal } from 'lit/static-html.js';
 
-import { NoteSlashMenuConfigExtension } from './configs/slash-menu';
+import {
+  GridNoteSlashMenuConfigExtension,
+  NoteSlashMenuConfigExtension,
+} from './configs/slash-menu';
 import { createBuiltinToolbarConfigExtension } from './configs/toolbar';
-import { EdgelessClipboardNoteConfig } from './edgeless-clipboard-config';
+import {
+  EdgelessClipboardNoteConfig,
+  GridNoteClipboardConfig,
+} from './edgeless-clipboard-config';
 import { effects } from './effects';
-import { EdgelessNoteInteraction } from './note-edgeless-block';
-import { NoteKeymapExtension } from './note-keymap';
+import {
+  EdgelessNoteInteraction,
+  GridEdgelessNoteInteraction,
+} from './note-edgeless-block';
+import { GridNoteKeymapExtension, NoteKeymapExtension } from './note-keymap';
 
-const flavour = NoteBlockSchema.model.flavour;
+const noteFlavourConfigs = [
+  {
+    flavour: NoteBlockSchema.model.flavour,
+    slashMenuExtension: NoteSlashMenuConfigExtension,
+    keymapExtension: NoteKeymapExtension,
+    clipboardExtension: EdgelessClipboardNoteConfig,
+  },
+  {
+    flavour: GridNoteBlockSchema.model.flavour,
+    slashMenuExtension: GridNoteSlashMenuConfigExtension,
+    keymapExtension: GridNoteKeymapExtension,
+    clipboardExtension: GridNoteClipboardConfig,
+  },
+] as const;
 
 export class NoteViewExtension extends ViewExtensionProvider {
   override name = 'affine-note-block';
@@ -25,23 +47,34 @@ export class NoteViewExtension extends ViewExtensionProvider {
 
   override setup(context: ViewExtensionContext) {
     super.setup(context);
-    context.register([
-      FlavourExtension(flavour),
-      NoteSlashMenuConfigExtension,
-      NoteKeymapExtension,
-    ]);
-
     const isEdgeless = this.isEdgeless(context.scope);
 
+    for (const {
+      flavour,
+      slashMenuExtension,
+      keymapExtension,
+      clipboardExtension,
+    } of noteFlavourConfigs) {
+      context.register([
+        FlavourExtension(flavour),
+        slashMenuExtension,
+        keymapExtension,
+      ]);
+
+      if (isEdgeless) {
+        context.register(
+          BlockViewExtension(flavour, literal`affine-edgeless-note`)
+        );
+        context.register(createBuiltinToolbarConfigExtension(flavour));
+        context.register(clipboardExtension);
+      } else {
+        context.register(BlockViewExtension(flavour, literal`affine-note`));
+      }
+    }
+
     if (isEdgeless) {
-      context.register(
-        BlockViewExtension(flavour, literal`affine-edgeless-note`)
-      );
-      context.register(createBuiltinToolbarConfigExtension(flavour));
-      context.register(EdgelessClipboardNoteConfig);
       context.register(EdgelessNoteInteraction);
-    } else {
-      context.register(BlockViewExtension(flavour, literal`affine-note`));
+      context.register(GridEdgelessNoteInteraction);
     }
   }
 }

@@ -1,4 +1,8 @@
-import type { NoteBlockModel } from '@blocksuite/affine-model';
+import {
+  DEFAULT_NOTE_HEIGHT,
+  type NoteBlockModel,
+} from '@blocksuite/affine-model';
+import { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-shared/consts';
 import { almostEqual, Bound } from '@blocksuite/global/gfx';
 import { SignalWatcher, WithDisposable } from '@blocksuite/global/lit';
 import { type EditorHost, ShadowlessElement } from '@blocksuite/std';
@@ -20,8 +24,13 @@ export class EdgelessNoteMask extends SignalWatcher(
           const bound = Bound.deserialize(this.model.xywh);
           const scale = this.model.props.edgeless.scale ?? 1;
           const height = entry.contentRect.height * scale;
+          const gridRows = this.model.props.grid?.rows;
+          const baseRows =
+            gridRows ??
+            Math.max(1, Math.round(DEFAULT_NOTE_HEIGHT / GRIDMAP_GRID_SIZE));
+          const minHeight = baseRows * GRIDMAP_GRID_SIZE;
 
-          if (!height || almostEqual(bound.h, height)) {
+          if (!height || height < minHeight || almostEqual(bound.h, height)) {
             return;
           }
 

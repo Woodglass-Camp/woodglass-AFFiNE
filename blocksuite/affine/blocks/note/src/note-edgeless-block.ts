@@ -1,9 +1,17 @@
 import { EdgelessLegacySlotIdentifier } from '@blocksuite/affine-block-surface';
 import type { DocTitle } from '@blocksuite/affine-fragment-doc-title';
-import { NoteBlockSchema, NoteDisplayMode } from '@blocksuite/affine-model';
+import {
+  GridNoteBlockSchema,
+  NoteBlockSchema,
+  NoteDisplayMode,
+} from '@blocksuite/affine-model';
 import { focusTextModel } from '@blocksuite/affine-rich-text';
-import { EDGELESS_BLOCK_CHILD_PADDING } from '@blocksuite/affine-shared/consts';
-import { TelemetryProvider } from '@blocksuite/affine-shared/services';
+import { GRIDMAP_GRID_SIZE } from '@blocksuite/affine-shared/consts';
+import {
+  DocModeProvider,
+  GridSnapProvider,
+  TelemetryProvider,
+} from '@blocksuite/affine-shared/services';
 import {
   handleNativeRangeAtPoint,
   stopPropagation,
@@ -64,8 +72,7 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
     if (!rect) return nothing;
 
     const zoom = this.gfx.viewport.zoom;
-    this._noteFullHeight =
-      rect.height / scale / zoom + 2 * EDGELESS_BLOCK_CHILD_PADDING;
+    this._noteFullHeight = rect.height / scale / zoom;
 
     if (height >= this._noteFullHeight) {
       return nothing;
@@ -203,8 +210,7 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
       if (!rect) return;
       const zoom = this.gfx.viewport.zoom;
       const scale = this.model.props.edgeless.scale ?? 1;
-      this._noteFullHeight =
-        rect.height / scale / zoom + 2 * EDGELESS_BLOCK_CHILD_PADDING;
+      this._noteFullHeight = rect.height / scale / zoom;
     });
     if (this._noteContent) {
       observer.observe(this, { childList: true, subtree: true });
@@ -253,9 +259,12 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
     const bound = Bound.deserialize(xywh);
     const height = bound.h / scale;
 
-    const style = {
+    const style: Record<string, string> = {
       borderRadius: borderRadius + 'px',
       transform: `scale(${scale})`,
+      width: `${bound.w / scale}px`,
+      height: `${height}px`,
+      minHeight: `${height}px`,
     };
 
     const extra = this._editing ? ACTIVE_NOTE_EXTRA_PADDING : 0;
@@ -271,6 +280,12 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
 
     const hasHeader = !!this.std.getOptional(NoteConfigExtension.identifier)
       ?.edgelessNoteHeader;
+    const gridSpan = this.model.props.grid ?? null;
+
+    if (gridSpan) {
+      style['--affine-gridmap-cols'] = String(gridSpan.cols);
+      style['--affine-gridmap-rows'] = String(gridSpan.rows);
+    }
 
     return html`
       <div
@@ -283,6 +298,12 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
         @mouseleave=${this._leaved}
         @mousemove=${this._hovered}
         data-scale="${scale}"
+        data-grid-cols=${ifDefined(
+          gridSpan ? String(gridSpan.cols) : undefined
+        )}
+        data-grid-rows=${ifDefined(
+          gridSpan ? String(gridSpan.rows) : undefined
+        )}
       >
         <edgeless-note-background
           .editing=${this._editing}
@@ -296,7 +317,7 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
             'overflow-y': this._isShowCollapsedContent ? 'initial' : 'clip',
           })}
         >
-          <div>
+          <div class=${styles.contentInner}>
             <edgeless-page-block-title
               .note=${this.model}
             ></edgeless-page-block-title>
@@ -360,7 +381,7 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
   @state()
   accessor hideMask = false;
 
-  @query(`.${styles.clipContainer} > div`)
+  @query(`.${styles.clipContainer} > .${styles.contentInner}`)
   private accessor _noteContent: HTMLElement | null = null;
 
   @query('doc-title')
@@ -373,127 +394,201 @@ declare global {
   }
 }
 
-export const EdgelessNoteInteraction =
-  GfxViewInteractionExtension<EdgelessNoteBlockComponent>(
-    NoteBlockSchema.model.flavour,
-    {
-      resizeConstraint: {
-        minWidth: 170 + 24 * 2,
-        minHeight: 92,
-      },
-      handleRotate: () => {
+const clampGridCells = (value: number, minPx: number, maxPx: number) => {
+  const minCells = Math.max(1, Math.ceil(minPx / GRIDMAP_GRID_SIZE));
+  const maxCellsRaw = maxPx / GRIDMAP_GRID_SIZE;
+  const maxCells = Number.isFinite(maxCellsRaw)
+    ? Math.max(minCells, Math.floor(maxCellsRaw))
+    : Number.MAX_SAFE_INTEGER;
+  const normalized = Number.isFinite(value) ? value : maxCells;
+  return clamp(normalized, minCells, maxCells);
+};
+
+const computeGridSpan = (cols: number, rows: number) => ({ cols, rows });
+
+const createEdgelessNoteInteraction = (flavour: string) =>
+  GfxViewInteractionExtension<EdgelessNoteBlockComponent>(flavour, {
+    resizeConstraint: {
+      minWidth: 170 + 24 * 2,
+      minHeight: 92,
+    },
+    handleRotate: () => {
+      return {
+        beforeRotate(context) {
+          context.set({
+            rotatable: false,
+          });
+        },
+      };
+    },
+    handleResize: ({ model, std }) => {
+      const resolveSnapState = () => {
+        const docMode = std.getOptional(DocModeProvider)?.getEditorMode();
+        const snapProvider = std.getOptional(GridSnapProvider);
+        const gridSnapEnabled =
+          docMode === 'gridmap' || (snapProvider?.enabled$.value ?? false);
+        const shouldTreatAsGridNote =
+          gridSnapEnabled &&
+          (docMode === 'gridmap'
+            ? model.flavour === GridNoteBlockSchema.model.flavour ||
+              model.props.grid !== undefined
+            : true);
         return {
-          beforeRotate(context) {
-            context.set({
-              rotatable: false,
+          gridSnapEnabled,
+          shouldTreatAsGridNote,
+        };
+      };
+
+      const initialScale: number = model.props.edgeless.scale ?? 1;
+      return {
+        onResizeStart(context): void {
+          context.default(context);
+          model.stash('edgeless');
+        },
+
+        onResizeMove(context): void {
+          const { originalBound, newBound, lockRatio, constraint } = context;
+          const { minWidth, minHeight, maxHeight, maxWidth } = constraint;
+          const { gridSnapEnabled, shouldTreatAsGridNote } = resolveSnapState();
+
+          let scale = initialScale;
+          let edgelessProp = { ...model.props.edgeless };
+          const originalRealWidth = originalBound.w / scale;
+
+          if (lockRatio) {
+            scale = newBound.w / originalRealWidth;
+            edgelessProp.scale = scale;
+          }
+
+          newBound.w = clamp(newBound.w, minWidth * scale, maxWidth);
+          newBound.h = clamp(newBound.h, minHeight * scale, maxHeight);
+
+          if (shouldTreatAsGridNote) {
+            const rawCols = Math.round(newBound.w / scale / GRIDMAP_GRID_SIZE);
+            const rawRows = Math.round(newBound.h / scale / GRIDMAP_GRID_SIZE);
+
+            const effectiveMinWidth = gridSnapEnabled
+              ? GRIDMAP_GRID_SIZE
+              : minWidth;
+            const effectiveMinHeight = gridSnapEnabled
+              ? GRIDMAP_GRID_SIZE
+              : minHeight;
+            const cols = clampGridCells(rawCols, effectiveMinWidth, maxWidth);
+            const rows = clampGridCells(rawRows, effectiveMinHeight, maxHeight);
+
+            newBound.w = cols * GRIDMAP_GRID_SIZE * scale;
+            newBound.h = rows * GRIDMAP_GRID_SIZE * scale;
+            model.props.grid = computeGridSpan(cols, rows);
+          }
+
+          if (newBound.h > minHeight * scale) {
+            edgelessProp.collapse = true;
+            edgelessProp.collapsedHeight = newBound.h / scale;
+          }
+
+          model.props.edgeless = edgelessProp;
+          model.props.xywh = newBound.serialize();
+        },
+
+        onResizeEnd(context): void {
+          context.default(context);
+          model.pop('edgeless');
+          const { gridSnapEnabled, shouldTreatAsGridNote } = resolveSnapState();
+          if (shouldTreatAsGridNote) {
+            const scale = model.props.edgeless.scale ?? initialScale;
+            const bound = Bound.deserialize(model.props.xywh);
+            const grid = model.props.grid ?? {
+              cols: Math.max(
+                1,
+                Math.round(bound.w / scale / GRIDMAP_GRID_SIZE)
+              ),
+              rows: Math.max(
+                1,
+                Math.round(bound.h / scale / GRIDMAP_GRID_SIZE)
+              ),
+            };
+            bound.w = grid.cols * GRIDMAP_GRID_SIZE * scale;
+            bound.h = grid.rows * GRIDMAP_GRID_SIZE * scale;
+            model.props.xywh = bound.serialize();
+            if (gridSnapEnabled || model.props.grid) {
+              model.props.grid = computeGridSpan(grid.cols, grid.rows);
+            }
+          }
+        },
+      };
+    },
+    handleSelection: ({ std, gfx, view, model }) => {
+      return {
+        onSelect(context) {
+          const { selected, multiSelect, event: e } = context;
+          const { editing } = gfx.selection;
+          const alreadySelected = gfx.selection.has(model.id);
+
+          if (!multiSelect && selected && (alreadySelected || editing)) {
+            if (model.isLocked()) return;
+
+            if (alreadySelected && editing) {
+              return;
+            }
+
+            gfx.selection.set({
+              elements: [model.id],
+              editing: true,
             });
-          },
-        };
-      },
-      handleResize: ({ model }) => {
-        const initialScale: number = model.props.edgeless.scale ?? 1;
-        return {
-          onResizeStart(context): void {
-            context.default(context);
-            model.stash('edgeless');
-          },
 
-          onResizeMove(context): void {
-            const { originalBound, newBound, lockRatio, constraint } = context;
-            const { minWidth, minHeight, maxHeight, maxWidth } = constraint;
+            view.updateComplete
+              .then(() => {
+                if (!view.isConnected) {
+                  return;
+                }
 
-            let scale = initialScale;
-            let edgelessProp = { ...model.props.edgeless };
-            const originalRealWidth = originalBound.w / scale;
+                if (model.children.length === 0) {
+                  const blockId = std.store.addBlock(
+                    'affine:paragraph',
+                    { type: 'text' },
+                    model.id
+                  );
 
-            if (lockRatio) {
-              scale = newBound.w / originalRealWidth;
-              edgelessProp.scale = scale;
-            }
-
-            newBound.w = clamp(newBound.w, minWidth * scale, maxWidth);
-            newBound.h = clamp(newBound.h, minHeight * scale, maxHeight);
-
-            if (newBound.h > minHeight * scale) {
-              edgelessProp.collapse = true;
-              edgelessProp.collapsedHeight = newBound.h / scale;
-            }
-
-            model.props.edgeless = edgelessProp;
-            model.props.xywh = newBound.serialize();
-          },
-
-          onResizeEnd(context): void {
-            context.default(context);
-            model.pop('edgeless');
-          },
-        };
-      },
-      handleSelection: ({ std, gfx, view, model }) => {
-        return {
-          onSelect(context) {
-            const { selected, multiSelect, event: e } = context;
-            const { editing } = gfx.selection;
-            const alreadySelected = gfx.selection.has(model.id);
-
-            if (!multiSelect && selected && (alreadySelected || editing)) {
-              if (model.isLocked()) return;
-
-              if (alreadySelected && editing) {
-                return;
-              }
-
-              gfx.selection.set({
-                elements: [model.id],
-                editing: true,
-              });
-
-              view.updateComplete
-                .then(() => {
-                  if (!view.isConnected) {
-                    return;
+                  if (blockId) {
+                    focusTextModel(std, blockId);
                   }
+                } else {
+                  const rect = view
+                    .querySelector('.affine-block-children-container')
+                    ?.getBoundingClientRect();
 
-                  if (model.children.length === 0) {
-                    const blockId = std.store.addBlock(
-                      'affine:paragraph',
-                      { type: 'text' },
-                      model.id
+                  if (rect) {
+                    const offsetY = 8 * gfx.viewport.zoom;
+                    const offsetX = 2 * gfx.viewport.zoom;
+                    const x = clamp(
+                      e.clientX,
+                      rect.left + offsetX,
+                      rect.right - offsetX
                     );
-
-                    if (blockId) {
-                      focusTextModel(std, blockId);
-                    }
+                    const y = clamp(
+                      e.clientY,
+                      rect.top + offsetY,
+                      rect.bottom - offsetY
+                    );
+                    handleNativeRangeAtPoint(x, y);
                   } else {
-                    const rect = view
-                      .querySelector('.affine-block-children-container')
-                      ?.getBoundingClientRect();
-
-                    if (rect) {
-                      const offsetY = 8 * gfx.viewport.zoom;
-                      const offsetX = 2 * gfx.viewport.zoom;
-                      const x = clamp(
-                        e.clientX,
-                        rect.left + offsetX,
-                        rect.right - offsetX
-                      );
-                      const y = clamp(
-                        e.clientY,
-                        rect.top + offsetY,
-                        rect.bottom - offsetY
-                      );
-                      handleNativeRangeAtPoint(x, y);
-                    } else {
-                      handleNativeRangeAtPoint(e.clientX, e.clientY);
-                    }
+                    handleNativeRangeAtPoint(e.clientX, e.clientY);
                   }
-                })
-                .catch(console.error);
-            } else {
-              context.default(context);
-            }
-          },
-        };
-      },
-    }
-  );
+                }
+              })
+              .catch(console.error);
+          } else {
+            context.default(context);
+          }
+        },
+      };
+    },
+  });
+
+export const EdgelessNoteInteraction = createEdgelessNoteInteraction(
+  NoteBlockSchema.model.flavour
+);
+
+export const GridEdgelessNoteInteraction = createEdgelessNoteInteraction(
+  GridNoteBlockSchema.model.flavour
+);
