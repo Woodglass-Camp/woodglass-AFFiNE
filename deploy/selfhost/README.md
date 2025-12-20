@@ -8,7 +8,7 @@
 
 ## 构建机
 
-构建 `linux/amd64` 镜像（推荐在 amd64 Linux 构建机上执行）：
+构建 `linux/amd64` 镜像（推荐在 amd64 Linux 构建机上执行）。该构建流程通过 Dockerfile 固化 Node/Rust/系统依赖环境，避免宿主机差异导致构建不稳定：
 
 ```bash
 bash deploy/selfhost/build-image.sh woodglass-affine:$(git rev-parse --short HEAD)
