@@ -13,6 +13,46 @@ Running yarn's server package (@affine/server) requires some dev services to be 
 - redis
 - mailhog
 
+## Quick start (Makefile, recommended)
+
+This repo provides a Makefile workflow that supports isolated port mappings and multiple stacks.
+
+```sh
+# initialize compose.yml/.env if missing and start dev services
+make dev-services-up
+
+# first time only: create server env + run migrations/init
+make dev-server-init
+
+# start server (default: http://localhost:3910)
+make dev-server
+
+# start web (default: http://localhost:3900)
+make dev-web
+```
+
+### Run multiple stacks in parallel
+
+```sh
+STACK=wg2 DB_PORT=55433 REDIS_PORT=56380 WEB_PORT=3901 AFFINE_SERVER_PORT=3911 make dev-services-up
+STACK=wg2 DB_PORT=55433 REDIS_PORT=56380 WEB_PORT=3901 AFFINE_SERVER_PORT=3911 make dev-server
+STACK=wg2 WEB_PORT=3901 make dev-web
+```
+
+### Backup/restore database (extra safety)
+
+```sh
+# dump to ./.docker/dev/backups/<stack>-<timestamp>.sql
+make db-dump
+
+# restore from a sql dump
+make db-restore BACKUP=./.docker/dev/backups/<file>.sql
+```
+
+> Avoid `docker compose down -v` unless you intentionally want to wipe the database volume.
+
+## Manual docker compose (alternative)
+
 You can run these services in docker compose by running the following command:
 
 ```sh
