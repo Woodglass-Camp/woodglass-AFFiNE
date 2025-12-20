@@ -9,17 +9,20 @@ cd "$repo_root"
 
 tmp_dir="$(mktemp -d)"
 saved_dev_node_modules=""
+saved_server_node_modules=""
 
 cleanup() {
   if [[ -d "packages/backend/server/node_modules" ]]; then
     rm -rf "packages/backend/server/node_modules"
   fi
 
+  if [[ -n "$saved_server_node_modules" && -d "$saved_server_node_modules" ]]; then
+    mv "$saved_server_node_modules" "packages/backend/server/node_modules"
+  fi
+
   if [[ -n "$saved_dev_node_modules" && -d "$saved_dev_node_modules" ]]; then
     rm -rf "node_modules"
     mv "$saved_dev_node_modules" "node_modules"
-  else
-    rm -rf "node_modules"
   fi
 
   rm -rf "$tmp_dir"
@@ -38,6 +41,16 @@ Host arch is '$host_arch'. Building a linux/amd64 runtime image requires the nat
 (@affine/server-native) to match the runtime arch. Prefer running this build on amd64 Linux.
 EOF
   exit 1
+fi
+
+if [[ ! -d "node_modules" ]]; then
+  echo "[0/5] node_modules not found, running yarn install"
+  yarn install
+fi
+
+if [[ -d "packages/backend/server/node_modules" ]]; then
+  saved_server_node_modules="$tmp_dir/node_modules.server.dev"
+  mv "packages/backend/server/node_modules" "$saved_server_node_modules"
 fi
 
 echo "[1/5] Build server-native (must match linux/amd64)"
@@ -69,4 +82,3 @@ docker buildx build --platform "$platform" -f .github/deployment/node/Dockerfile
 
 echo "Built image: $image_tag"
 echo "Next: bash deploy/selfhost/pack-image.sh $image_tag"
-
