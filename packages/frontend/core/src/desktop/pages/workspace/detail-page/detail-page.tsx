@@ -289,6 +289,7 @@ const DetailPageImpl = memo(function DetailPageImpl() {
   const canEdit = useGuard('Doc_Update', doc.id);
 
   const readonly = !canEdit || isInTrash;
+  const isGridmap = mode === 'gridmap';
 
   return (
     <FrameworkScope scope={editor.scope}>
@@ -318,8 +319,15 @@ const DetailPageImpl = memo(function DetailPageImpl() {
                   styles.affineDocViewport,
                   styles.editorContainer
                 )}
+                style={isGridmap ? { background: 'transparent' } : undefined}
               >
-                <PageDetailEditor onLoad={onLoad} readonly={readonly} />
+                {isGridmap ? (
+                  <div className={styles.gridmapCanvas}>
+                    <PageDetailEditor onLoad={onLoad} readonly={readonly} />
+                  </div>
+                ) : (
+                  <PageDetailEditor onLoad={onLoad} readonly={readonly} />
+                )}
               </Scrollable.Viewport>
               <Scrollable.Scrollbar
                 className={clsx({
@@ -327,11 +335,13 @@ const DetailPageImpl = memo(function DetailPageImpl() {
                 })}
               />
             </Scrollable.Root>
-            <EditorOutlineViewer
-              editor={editorContainer?.host ?? null}
-              show={mode === 'page' && !isSideBarOpen}
-              openOutlinePanel={openOutlinePanel}
-            />
+            {!isGridmap && (
+              <EditorOutlineViewer
+                editor={editorContainer?.host ?? null}
+                show={mode === 'page' && !isSideBarOpen}
+                openOutlinePanel={openOutlinePanel}
+              />
+            )}
           </AffineErrorBoundary>
           {isInTrash ? <TrashPageFooter /> : null}
         </div>

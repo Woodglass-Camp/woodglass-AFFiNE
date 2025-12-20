@@ -40,7 +40,7 @@ export const EditorModeSwitch = () => {
     [close, editor]
   );
 
-  if (trash || isSharedMode) {
+  if (trash || isSharedMode || currentMode === 'gridmap') {
     return null;
   }
 

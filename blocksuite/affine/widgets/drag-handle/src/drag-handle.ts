@@ -3,6 +3,7 @@ import type { RootBlockModel } from '@blocksuite/affine-model';
 import { DocModeProvider } from '@blocksuite/affine-shared/services';
 import {
   isInsideEdgelessEditor,
+  isInsideGridmapEditor,
   isInsidePageEditor,
 } from '@blocksuite/affine-shared/utils';
 import { DisposableGroup } from '@blocksuite/global/disposable';
@@ -185,7 +186,10 @@ export class AffineDragHandleWidget extends WidgetComponent<RootBlockModel> {
 
     if (isInsidePageEditor(this.host)) {
       this._pageWatcher.watch();
-    } else if (isInsideEdgelessEditor(this.host)) {
+    } else if (
+      isInsideEdgelessEditor(this.host) ||
+      isInsideGridmapEditor(this.host)
+    ) {
       this.edgelessWatcher.watch();
     }
   }

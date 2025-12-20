@@ -7,6 +7,7 @@ import { Extension } from '@blocksuite/store';
 import { Subject, type Subscription } from 'rxjs';
 
 const DEFAULT_MODE: DocMode = 'page';
+const MODE_SEQUENCE: DocMode[] = ['page', 'edgeless', 'gridmap'];
 
 export interface DocModeProvider {
   /**
@@ -93,10 +94,12 @@ export class DocModeService extends Extension implements DocModeProvider {
   }
 
   togglePrimaryMode(id: string) {
-    const mode = this.getPrimaryMode(id) === 'page' ? 'edgeless' : 'page';
-    this.setPrimaryMode(mode, id);
+    const current = this.getPrimaryMode(id);
+    const index = MODE_SEQUENCE.indexOf(current);
+    const next = MODE_SEQUENCE[(index + 1) % MODE_SEQUENCE.length] ?? 'page';
+    this.setPrimaryMode(next, id);
 
-    return mode;
+    return next;
   }
 }
 

@@ -702,10 +702,10 @@ export type EventArgs = {
   };
   toggleFavorite: OrganizeItemArgs & { on: boolean };
   toggle: { type: 'collapse' | 'expand' };
-  createDoc: { mode?: 'edgeless' | 'page' };
-  quickStart: { with: 'page' | 'edgeless' | 'template' | 'ai' };
-  switchPageMode: { mode: 'edgeless' | 'page' };
-  createShareLink: { mode: 'edgeless' | 'page' };
+  createDoc: { mode?: 'edgeless' | 'page' | 'gridmap' };
+  quickStart: { with: 'page' | 'edgeless' | 'gridmap' | 'template' | 'ai' };
+  switchPageMode: { mode: 'edgeless' | 'page' | 'gridmap' };
+  createShareLink: { mode: 'edgeless' | 'page' | 'gridmap' };
   copyShareLink: {
     type: 'default' | 'doc' | 'whiteboard' | 'block' | 'element';
   };
@@ -721,7 +721,7 @@ export type EventArgs = {
   drop: { type: string };
   dragStart: { type: string };
   addEmbeddingDoc: {
-    type?: 'page' | 'edgeless';
+    type?: 'page' | 'edgeless' | 'gridmap';
     control: 'addButton' | 'atMenu';
     method: 'doc' | 'cur-doc' | 'file' | 'tags' | 'collections' | 'suggestion';
   };

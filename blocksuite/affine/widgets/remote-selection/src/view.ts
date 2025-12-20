@@ -20,7 +20,7 @@ export class RemoteSelectionViewExtension extends ViewExtensionProvider {
   override setup(context: ViewExtensionContext) {
     super.setup(context);
     context.register(docRemoteSelectionWidget);
-    if (context.scope === 'edgeless') {
+    if (this.isEdgeless(context.scope)) {
       context.register(edgelessRemoteSelectionWidget);
     }
   }

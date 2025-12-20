@@ -16,7 +16,7 @@ export class FrameTitleViewExtension extends ViewExtensionProvider {
 
   override setup(context: ViewExtensionContext) {
     super.setup(context);
-    if (context.scope === 'edgeless') {
+    if (this.isEdgeless(context.scope)) {
       context.register(frameTitleWidget);
     }
   }

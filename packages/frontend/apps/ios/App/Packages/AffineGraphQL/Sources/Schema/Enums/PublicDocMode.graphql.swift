@@ -6,5 +6,6 @@ import ApolloAPI
 /// The mode which the public doc default in
 public enum PublicDocMode: String, EnumType {
   case edgeless = "Edgeless"
+  case gridmap = "Gridmap"
   case page = "Page"
 }

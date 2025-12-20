@@ -29,6 +29,7 @@ import {
   PlusIcon,
   PlusThickIcon,
   RemoveFolderIcon,
+  TableIcon,
   TagsIcon,
 } from '@blocksuite/icons/rc';
 import { useLiveData, useServices } from '@toeverything/infra';
@@ -577,6 +578,18 @@ const NavigationPanelFolderNodeFolder = ({
     setCollapsed(false);
   }, [createPage, node]);
 
+  const handleNewGridmap = useCallback(() => {
+    const newDoc = createPage('gridmap');
+    node.createLink('doc', newDoc.id, node.indexAt('before'));
+    track.$.navigationPanel.folders.createDoc();
+    track.$.navigationPanel.organize.createOrganizeItem({
+      type: 'link',
+      target: 'doc',
+    });
+    track.$.sidebar.newDoc.quickStart({ with: 'gridmap' });
+    setCollapsed(false);
+  }, [createPage, node]);
+
   const handleCreateSubfolder = useCallback(() => {
     const newFolderId = node.createFolder(
       t['com.affine.rootAppSidebar.organize.new-folders'](),
@@ -659,6 +672,14 @@ const NavigationPanelFolderNodeFolder = ({
       {
         index: 101,
         view: (
+          <MenuItem prefixIcon={<TableIcon />} onClick={handleNewGridmap}>
+            {t['New Gridmap']?.() ?? 'New Gridmap'}
+          </MenuItem>
+        ),
+      },
+      {
+        index: 102,
+        view: (
           <MenuItem
             prefixIcon={<PageIcon />}
             onClick={() => handleAddToFolder('doc')}
@@ -668,7 +689,7 @@ const NavigationPanelFolderNodeFolder = ({
         ),
       },
       {
-        index: 102,
+        index: 103,
         view: (
           <MenuSub
             triggerOptions={{
@@ -725,6 +746,7 @@ const NavigationPanelFolderNodeFolder = ({
     handleCreateSubfolder,
     handleDelete,
     handleNewDoc,
+    handleNewGridmap,
     node,
     t,
   ]);

@@ -6,5 +6,6 @@ import ApolloAPI
 /// Doc mode
 public enum DocMode: String, EnumType {
   case edgeless = "edgeless"
+  case gridmap = "gridmap"
   case page = "page"
 }

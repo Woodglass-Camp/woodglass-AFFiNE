@@ -1,3 +1,4 @@
+import { type DocMode, DocModes } from '@blocksuite/affine-model';
 import {
   type HtmlAST,
   HtmlASTToDeltaExtension,
@@ -42,8 +43,8 @@ export const htmlLinkElementToDeltaMatcher = HtmlASTToDeltaExtension({
                 pageId,
                 params: {
                   mode:
-                    mode && ['edgeless', 'page'].includes(mode)
-                      ? (mode as 'edgeless' | 'page')
+                    mode && DocModes.includes(mode as DocMode)
+                      ? (mode as DocMode)
                       : undefined,
                   blockIds,
                   elementIds,
