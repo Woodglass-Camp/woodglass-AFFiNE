@@ -20,7 +20,7 @@ bash deploy/selfhost/proxy/setup-redsocks.sh
 
 默认行为：
 
-- 本地透明入口：`127.0.0.1:12345`
+- 本地透明入口：`0.0.0.0:12345`（用于接收 docker0 的 `REDIRECT` 流量；如需收敛监听范围可自行改成 docker0 网桥 IP）
 - 上游显式代理：`192.168.195.1:7890`（Clash `mixed-port`，按 socks5 使用）
 
 如需自定义（示例）：

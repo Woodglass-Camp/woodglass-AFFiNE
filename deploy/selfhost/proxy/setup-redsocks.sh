@@ -5,7 +5,7 @@ PROXY_SERVER_HOST="${PROXY_SERVER_HOST:-192.168.195.1}"
 PROXY_SERVER_PORT="${PROXY_SERVER_PORT:-7890}"
 PROXY_TYPE="${PROXY_TYPE:-socks5}"
 
-REDSOCKS_LOCAL_IP="${REDSOCKS_LOCAL_IP:-127.0.0.1}"
+REDSOCKS_LOCAL_IP="${REDSOCKS_LOCAL_IP:-0.0.0.0}"
 REDSOCKS_LOCAL_PORT="${REDSOCKS_LOCAL_PORT:-12345}"
 
 REDSOCKS_CONF="${REDSOCKS_CONF:-/etc/redsocks.conf}"
@@ -57,4 +57,3 @@ echo "OK. Next:"
 echo "  REDIR_PORT=${REDSOCKS_LOCAL_PORT} PROXY_SERVER_IP=${PROXY_SERVER_HOST} bash deploy/selfhost/proxy/enable-docker0-transparent-proxy.sh"
 echo "Check:"
 echo "  bash deploy/selfhost/proxy/check-redsocks.sh"
-
