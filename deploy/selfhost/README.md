@@ -58,3 +58,9 @@ bash logs.sh
 bash backup-db.sh
 bash backup-files.sh
 ```
+
+## 构建加速（透明代理，可选）
+
+若你有局域网内的代理服务器（例如 `192.168.195.1:7890`），并希望让“容器出网”（包括 docker build 的构建阶段 RUN）走透明代理，可参考：
+
+- `deploy/selfhost/proxy/README.md`
