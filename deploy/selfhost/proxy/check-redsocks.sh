@@ -15,5 +15,4 @@ sudo ss -lntp | rg ":${REDSOCKS_LOCAL_PORT}\\b" || {
 
 echo ""
 echo "iptables (docker0 redirect) quick check:"
-sudo iptables -t nat -S PREROUTING | rg "docker0|WG_DOCKER0_REDIR" || true
-
+sudo iptables -t nat -S PREROUTING | rg "WG_DOCKER0_REDIR|wg-docker0-transparent-proxy" || true

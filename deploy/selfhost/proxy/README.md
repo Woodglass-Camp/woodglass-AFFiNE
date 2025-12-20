@@ -8,7 +8,7 @@
 
 - 你在另一台机器提供显式代理：`192.168.195.1:7890`（Clash `mixed-port`）
 - 在构建机本机使用 `redsocks` 把透明流量转成显式代理
-- 使用 `iptables nat PREROUTING` 仅对 `docker0` 做 `REDIRECT`（只拦 `80/443`）
+- 使用 `iptables nat PREROUTING` 仅对 docker0 的默认 bridge 子网（通常 `172.17.0.0/16`）做 `REDIRECT`（只拦 `80/443`）
 
 ## 使用
 
@@ -54,6 +54,7 @@ bash deploy/selfhost/proxy/stop-redsocks.sh
 
 - `REDIR_PORT`：本机透明入口端口（默认 `12345`，通常是 redsocks 的 local_port）
 - `PROXY_SERVER_IP`：代理服务器 IP（默认 `192.168.195.1`，用于显式排除避免回环）
+- `DOCKER_SUBNET`：docker0 默认 bridge 子网（默认自动探测 `docker network inspect bridge`，例如 `172.17.0.0/16`）
 
 ## redsocks 示例（仅供参考）
 
