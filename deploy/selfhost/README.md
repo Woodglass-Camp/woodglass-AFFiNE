@@ -16,6 +16,12 @@ bash deploy/selfhost/build-image.sh woodglass-affine:$(git rev-parse --short HEA
 
 说明：脚本优先使用 `docker buildx`，若本机未安装 buildx 会自动回退到 `docker build`。
 
+清理缓存（强制重新构建，不复用 layer cache）：
+
+```bash
+bash deploy/selfhost/build-image.sh --clean woodglass-affine:$(git rev-parse --short HEAD)
+```
+
 打包成可传输的离线镜像包：
 
 ```bash
